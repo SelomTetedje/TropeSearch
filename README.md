@@ -1,6 +1,8 @@
 # TropeSearch
 CS 422 Fall 2025 Semester Project: TropeSearch
 
+This is a project in where we are creating a website where people can search for movies and tv shows based on the tropes that show up within them rather than the normal genre sorting. 
+
 Citation for TV Tropes Database
 Github Repo: https://github.com/dhruvilgala/tvtropes
 

@@ -26,3 +26,4 @@ abstract = "Popular media reflects and reinforces societal biases through the us
 }
 
 TMP: supabase pass: gc5z14CkGOzjFPV9
+Omdb API key: 9328bc17

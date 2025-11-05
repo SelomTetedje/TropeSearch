@@ -45,9 +45,28 @@ function normalizeTitle(title) {
   return title.toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
+// Function to create a progress bar
+function createProgressBar(current, total, width = 30) {
+  const percentage = (current / total) * 100;
+  const filled = Math.round((width * current) / total);
+  const empty = width - filled;
+  const filledBar = '█'.repeat(filled);
+  const emptyBar = '░'.repeat(empty);
+  const percentageText = percentage.toFixed(1).padStart(5);
+  
+  return `[${filledBar}${emptyBar}] ${percentageText}% (${current}/${total})`;
+}
+
+// Function to update progress on same line
+function updateProgress(text) {
+  process.stdout.clearLine();
+  process.stdout.cursorTo(0);
+  process.stdout.write(text);
+}
+
 // --- Config: which rows to process ---
-const startRow = 5000;
-const endRow = 5100;
+const startRow = 10000;
+const endRow = 20000;
 
 // --- Read CSV ---
 const results = [];
@@ -56,6 +75,7 @@ fs.createReadStream("../frontend/src/data/film_tropes.csv")
   .on("data", (data) => results.push(data))
   .on("end", async () => {
     const subset = results.slice(startRow, endRow);
+    console.log(`\nProcessing ${subset.length} rows from ${startRow} to ${endRow - 1}\n`);
 
     for (let i = 0; i < subset.length; i++) {
       const row = subset[i];
@@ -65,9 +85,13 @@ fs.createReadStream("../frontend/src/data/film_tropes.csv")
 
       const title = cleanTitle(rawTitle);
       const tropeName = cleanTitle(rawTropeName);
-      // row number corresponds to its index in the original CSV (zero-based)
       const rowNumber = startRow + i;
-      console.log("\nProcessing row:", rowNumber, title, "-", tropeName);
+      
+      // Update progress bar
+      updateProgress(createProgressBar(i + 1, subset.length));
+      
+      // Log current operation on new line
+      console.log(`\n\nProcessing: ${title} - ${tropeName} (Row ${rowNumber})`);
 
       // --- Step 1: Check if film exists (using normalized title matching) ---
       const { data: allFilms } = await supabase
@@ -206,5 +230,7 @@ fs.createReadStream("../frontend/src/data/film_tropes.csv")
       else console.log("✅ Added trope:", tropeName, "to film:", film.name);
     }
 
-    console.log("\n✅ All done for rows", startRow, "to", endRow - 1);
+    // Final progress update
+    updateProgress(createProgressBar(subset.length, subset.length));
+    console.log("\n\n✅ All done for rows", startRow, "to", endRow - 1);
   });

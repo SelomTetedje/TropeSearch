@@ -46,8 +46,8 @@ function normalizeTitle(title) {
 }
 
 // --- Config: which rows to process ---
-const startRow = 40;
-const endRow = 50;
+const startRow = 5000;
+const endRow = 5100;
 
 // --- Read CSV ---
 const results = [];
@@ -57,14 +57,17 @@ fs.createReadStream("../frontend/src/data/film_tropes.csv")
   .on("end", async () => {
     const subset = results.slice(startRow, endRow);
 
-    for (const row of subset) {
+    for (let i = 0; i < subset.length; i++) {
+      const row = subset[i];
       const rawTitle = row["Title"];
       const rawTropeName = row["Trope"];
       const example = row["Example"];
 
       const title = cleanTitle(rawTitle);
       const tropeName = cleanTitle(rawTropeName);
-      console.log("\nProcessing row:", title, "-", tropeName);
+      // row number corresponds to its index in the original CSV (zero-based)
+      const rowNumber = startRow + i;
+      console.log("\nProcessing row:", rowNumber, title, "-", tropeName);
 
       // --- Step 1: Check if film exists (using normalized title matching) ---
       const { data: allFilms } = await supabase

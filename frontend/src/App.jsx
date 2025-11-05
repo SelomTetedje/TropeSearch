@@ -13,7 +13,10 @@ function App() {
     minYear: "",
     maxYear: "",
     minRating: "",
-    director: ""
+    director: "",
+    genres: [],
+    languages: [],
+    tropes: []
   });
   const [showFilters, setShowFilters] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -30,14 +33,27 @@ function App() {
     setLoading(true);
     const { data, error } = await supabase
       .from("films")
-      .select("*")
+      .select(`
+        *,
+        film_genres(genre_id, genres(id, name)),
+        film_languages(language_id, languages(id, name)),
+        film_tropes(trope_id, tropes(id, name))
+      `)
       .order("name", { ascending: true });
     
     if (error) {
       console.error("Error fetching films:", error);
     } else {
-      setFilms(data || []);
-      setFilteredFilms(data || []);
+      // Transform the data to include nested relations in a more usable format
+      const transformedData = data?.map(film => ({
+        ...film,
+        genres: film.film_genres?.map(fg => fg.genres) || [],
+        languages: film.film_languages?.map(fl => fl.languages) || [],
+        tropes: film.film_tropes?.map(ft => ft.tropes) || []
+      })) || [];
+
+      setFilms(transformedData);
+      setFilteredFilms(transformedData);
     }
     setLoading(false);
   }
@@ -75,6 +91,33 @@ function App() {
       );
     }
 
+    // Genre filter
+    if (filters.genres && filters.genres.length > 0) {
+      results = results.filter(film =>
+        filters.genres.every(selectedGenre =>
+          film.genres.some(filmGenre => filmGenre.id === selectedGenre.id)
+        )
+      );
+    }
+
+    // Language filter
+    if (filters.languages && filters.languages.length > 0) {
+      results = results.filter(film =>
+        filters.languages.every(selectedLanguage =>
+          film.languages.some(filmLanguage => filmLanguage.id === selectedLanguage.id)
+        )
+      );
+    }
+
+    // Trope filter
+    if (filters.tropes && filters.tropes.length > 0) {
+      results = results.filter(film =>
+        filters.tropes.every(selectedTrope =>
+          film.tropes.some(filmTrope => filmTrope.id === selectedTrope.id)
+        )
+      );
+    }
+
     setFilteredFilms(results);
   }
 
@@ -84,7 +127,10 @@ function App() {
       minYear: "",
       maxYear: "",
       minRating: "",
-      director: ""
+      director: "",
+      genres: [],
+      languages: [],
+      tropes: []
     });
   }
 
@@ -92,7 +138,12 @@ function App() {
     setFilters(prev => ({ ...prev, [field]: value }));
   }
 
-  const activeFilterCount = Object.values(filters).filter(v => v !== "").length;
+  const activeFilterCount = Object.entries(filters).reduce((count, [key, value]) => {
+    if (Array.isArray(value)) {
+      return count + (value.length > 0 ? 1 : 0);
+    }
+    return count + (value !== "" ? 1 : 0);
+  }, 0);
 
   if (loading) {
     return (

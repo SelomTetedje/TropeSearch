@@ -64,9 +64,35 @@ function updateProgress(text) {
   process.stdout.write(text);
 }
 
+// Cache for failed OMDB lookups
+const CACHE_FILE = './.omdb_failed_cache.json';
+let failedMovies = new Set();
+
+// Load failed movies cache if it exists
+try {
+  if (fs.existsSync(CACHE_FILE)) {
+    const cache = JSON.parse(fs.readFileSync(CACHE_FILE, 'utf8'));
+    failedMovies = new Set(cache);
+    console.log(`Loaded ${failedMovies.size} failed movies from cache`);
+  }
+} catch (error) {
+  console.warn('Error loading failed movies cache:', error);
+}
+
+// Function to add a movie to failed cache
+function addToFailedCache(normalizedTitle) {
+  failedMovies.add(normalizedTitle);
+  // Save to file
+  try {
+    fs.writeFileSync(CACHE_FILE, JSON.stringify([...failedMovies]), 'utf8');
+  } catch (error) {
+    console.warn('Error saving failed movies cache:', error);
+  }
+}
+
 // --- Config: which rows to process ---
-const startRow = 10000;
-const endRow = 20000;
+const startRow = 30000;
+const endRow = 40000;
 
 // --- Read CSV ---
 const results = [];
@@ -102,6 +128,13 @@ fs.createReadStream("../frontend/src/data/film_tropes.csv")
       let film = allFilms?.find(f => normalizeTitle(f.name) === normalizedSearchTitle);
 
       if (!film) {
+        // Check if we've already failed to find this movie before
+        const normalizedForCache = normalizeTitle(title);
+        if (failedMovies.has(normalizedForCache)) {
+          console.log("Skipping previously failed movie:", title);
+          continue;
+        }
+
         console.log("Fetching OMDb for:", title);
         const url = `https://www.omdbapi.com/?t=${encodeURIComponent(title)}&apikey=${OMDB_API}`;
         const res = await fetch(url);
@@ -199,6 +232,8 @@ fs.createReadStream("../frontend/src/data/film_tropes.csv")
           }
         } else {
           console.warn("OMDb not found for", title);
+          // Add to failed cache
+          addToFailedCache(normalizedForCache);
           continue;
         }
       } else {

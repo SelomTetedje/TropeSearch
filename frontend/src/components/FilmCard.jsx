@@ -1,6 +1,15 @@
-export default function FilmCard({ film }) {
+export default function FilmCard({ film, onClick }) {
   return (
-    <div className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:shadow-md transition-all">
+    <div
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (!onClick) return;
+        if (e.key === "Enter" || e.key === " ") onClick();
+      }}
+      className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer"
+    >
       <div className="flex justify-between items-start gap-4">
         <div className="flex-1">
           <h3 className="text-xl font-semibold text-gray-900">

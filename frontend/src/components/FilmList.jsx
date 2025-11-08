@@ -1,6 +1,10 @@
+import { useState } from "react";
 import FilmCard from "./FilmCard";
+import FilmModal from "./FilmModal";
 
 export default function FilmList({ films, onClearFilters }) {
+  const [selectedFilm, setSelectedFilm] = useState(null);
+
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
       <div className="flex justify-between items-center mb-4">
@@ -22,9 +26,13 @@ export default function FilmList({ films, onClearFilters }) {
       ) : (
         <div className="space-y-3">
           {films.map((film) => (
-            <FilmCard key={film.id} film={film} />
+            <FilmCard key={film.id} film={film} onClick={() => setSelectedFilm(film)} />
           ))}
         </div>
+      )}
+
+      {selectedFilm && (
+        <FilmModal film={selectedFilm} onClose={() => setSelectedFilm(null)} />
       )}
     </div>
   );

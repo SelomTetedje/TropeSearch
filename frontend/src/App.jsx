@@ -189,7 +189,7 @@ function App() {
       {/* Make sure Navbar calls onLogoClick when the logo is pressed */}
       <NavBar onLogoClick={handleLogoClick} />
 
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto mt-6">
         <SearchBar
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}

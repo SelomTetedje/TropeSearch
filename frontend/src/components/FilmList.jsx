@@ -1,11 +1,12 @@
 import FilmCard from "./FilmCard";
+import FilmCardLarge from "./FilmCardLarge";
 
-export default function FilmList({ films, onClearFilters }) {
+export default function FilmList({ films, onClearFilters, viewMode }) {
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold text-gray-900">
-          {films.length} {films.length === 1 ? 'Film' : 'Films'} Found
+          {films.length} {films.length === 1 ? "Film" : "Films"} Found
         </h2>
       </div>
 
@@ -20,10 +21,14 @@ export default function FilmList({ films, onClearFilters }) {
           </button>
         </div>
       ) : (
-        <div className="space-y-3">
-          {films.map((film) => (
-            <FilmCard key={film.id} film={film} />
-          ))}
+        <div className={viewMode === "large" ? "flex flex-col gap-5" : "space-y-3"}>
+          {films.map((film) =>
+            viewMode === "large" ? (
+              <FilmCardLarge key={film.id} film={film} />
+            ) : (
+              <FilmCard key={film.id} film={film} />
+            )
+          )}
         </div>
       )}
     </div>

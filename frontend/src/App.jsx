@@ -9,6 +9,15 @@ function App() {
   const [films, setFilms] = useState([]);
   const [filteredFilms, setFilteredFilms] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Start in large view (change to "compact" if you prefer) and persist choice
+  const [viewMode, setViewMode] = useState(() => (
+    localStorage.getItem("viewMode") || "large"
+  ));
+  useEffect(() => {
+    localStorage.setItem("viewMode", viewMode);
+  }, [viewMode]);
+
   const [filters, setFilters] = useState({
     minYear: "",
     maxYear: "",
@@ -40,17 +49,17 @@ function App() {
         film_tropes(trope_id, tropes(id, name))
       `)
       .order("name", { ascending: true });
-    
+
     if (error) {
       console.error("Error fetching films:", error);
     } else {
-      // Transform the data to include nested relations in a more usable format
-      const transformedData = data?.map(film => ({
-        ...film,
-        genres: film.film_genres?.map(fg => fg.genres) || [],
-        languages: film.film_languages?.map(fl => fl.languages) || [],
-        tropes: film.film_tropes?.map(ft => ft.tropes) || []
-      })) || [];
+      const transformedData =
+        data?.map((film) => ({
+          ...film,
+          genres: film.film_genres?.map((fg) => fg.genres) || [],
+          languages: film.film_languages?.map((fl) => fl.languages) || [],
+          tropes: film.film_tropes?.map((ft) => ft.tropes) || [],
+        })) || [];
 
       setFilms(transformedData);
       setFilteredFilms(transformedData);
@@ -61,60 +70,39 @@ function App() {
   function applyFilters() {
     let results = [...films];
 
-    // Search filter
     if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      results = results.filter(film => 
-        film.name?.toLowerCase().includes(query) ||
-        film.director?.toLowerCase().includes(query)
+      const q = searchQuery.toLowerCase();
+      results = results.filter(
+        (f) =>
+          f.name?.toLowerCase().includes(q) ||
+          f.director?.toLowerCase().includes(q)
       );
     }
 
-    // Year range filter
-    if (filters.minYear) {
-      results = results.filter(film => film.year >= parseInt(filters.minYear));
-    }
-    if (filters.maxYear) {
-      results = results.filter(film => film.year <= parseInt(filters.maxYear));
-    }
+    if (filters.minYear) results = results.filter((f) => f.year >= +filters.minYear);
+    if (filters.maxYear) results = results.filter((f) => f.year <= +filters.maxYear);
+    if (filters.minRating) results = results.filter((f) => f.imdb_rating >= +filters.minRating);
 
-    // Rating filter
-    if (filters.minRating) {
-      results = results.filter(film => film.imdb_rating >= parseFloat(filters.minRating));
-    }
-
-    // Director filter
     if (filters.director) {
-      const directorQuery = filters.director.toLowerCase();
-      results = results.filter(film => 
-        film.director?.toLowerCase().includes(directorQuery)
+      const dq = filters.director.toLowerCase();
+      results = results.filter((f) => f.director?.toLowerCase().includes(dq));
+    }
+
+    if (filters.genres?.length) {
+      results = results.filter((f) =>
+        filters.genres.every((g) => f.genres.some((fg) => fg.id === g.id))
       );
     }
 
-    // Genre filter
-    if (filters.genres && filters.genres.length > 0) {
-      results = results.filter(film =>
-        filters.genres.every(selectedGenre =>
-          film.genres.some(filmGenre => filmGenre.id === selectedGenre.id)
-        )
+    if (filters.languages?.length) {
+      results = results.filter((f) =>
+        filters.languages.every((l) => f.languages.some((fl) => fl.id === l.id))
       );
     }
 
-    // Language filter
-    if (filters.languages && filters.languages.length > 0) {
-      results = results.filter(film =>
-        filters.languages.every(selectedLanguage =>
-          film.languages.some(filmLanguage => filmLanguage.id === selectedLanguage.id)
-        )
-      );
-    }
-
-    // Trope filter
-    if (filters.tropes && filters.tropes.length > 0) {
-      results = results.filter(film =>
-        filters.tropes.every(selectedTrope =>
-          film.tropes.some(filmTrope => filmTrope.id === selectedTrope.id)
-        )
+    if (filters.tropes?.length) {
+      results = results.filter((f) =>
+        filters.tropes.every((t) => f.tropes.some((ft) => ft.id === t.id))
       );
     }
 
@@ -130,19 +118,17 @@ function App() {
       director: "",
       genres: [],
       languages: [],
-      tropes: []
+      tropes: [],
     });
   }
 
   function handleFilterChange(field, value) {
-    setFilters(prev => ({ ...prev, [field]: value }));
+    setFilters((prev) => ({ ...prev, [field]: value }));
   }
 
-  const activeFilterCount = Object.entries(filters).reduce((count, [key, value]) => {
-    if (Array.isArray(value)) {
-      return count + (value.length > 0 ? 1 : 0);
-    }
-    return count + (value !== "" ? 1 : 0);
+  const activeFilterCount = Object.entries(filters).reduce((count, [, v]) => {
+    if (Array.isArray(v)) return count + (v.length ? 1 : 0);
+    return count + (v !== "" ? 1 : 0);
   }, 0);
 
   if (loading) {
@@ -162,6 +148,8 @@ function App() {
           setSearchQuery={setSearchQuery}
           onToggleFilters={() => setShowFilters(!showFilters)}
           activeFilterCount={activeFilterCount}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
         />
 
         <FilterPanel
@@ -174,6 +162,7 @@ function App() {
         <FilmList
           films={filteredFilms}
           onClearFilters={clearFilters}
+          viewMode={viewMode}
         />
       </div>
     </div>

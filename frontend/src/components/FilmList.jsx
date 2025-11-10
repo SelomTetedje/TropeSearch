@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import FilmCard from "./FilmCardSmall";
 import FilmCardLarge from "./FilmCardLarge";
+import FilmModal from "./FilmModal";
 
 export default function FilmList({ 
   films, 
@@ -11,6 +13,12 @@ export default function FilmList({
   totalPages,
   onPageChange
 }) {
+  const [selectedFilm, setSelectedFilm] = useState(null);
+
+  const openFilm = (film) => setSelectedFilm(film);
+
+  const closeModal = () => setSelectedFilm(null);
+
   const renderPagination = () => {
     if (totalPages <= 1) return null;
 
@@ -77,6 +85,7 @@ export default function FilmList({
   };
 
   return (
+    <>
     <div className="rounded-lg shadow-sm p-6 bg-gray-800">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold text-gray-100">
@@ -110,9 +119,9 @@ export default function FilmList({
           >
             {films.map((film, i) =>
               viewMode === "large" ? (
-                <FilmCardLarge key={film.id || i} film={film} />
+                <FilmCardLarge key={film.id || i} film={film} onSelect={openFilm} />
               ) : (
-                <FilmCard key={film.id || i} film={film} index={i} />
+                <FilmCard key={film.id || i} film={film} index={i} onSelect={openFilm} />
               )
             )}
           </div>
@@ -120,10 +129,10 @@ export default function FilmList({
           {renderPagination()}
         </>
       )}
-
-      {selectedFilm && (
-        <FilmModal film={selectedFilm} onClose={() => setSelectedFilm(null)} />
-      )}
     </div>
+    {selectedFilm && (
+      <FilmModal film={selectedFilm} onClose={closeModal} />
+    )}
+    </>
   );
 }

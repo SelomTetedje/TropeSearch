@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import "react-lazy-load-image-component/src/effects/blur.css";
 
-export default function FilmCardLarge({ film }) {
+export default function FilmCardLarge({ film, onSelect }) {
   const poster =
     film.poster_url || film.poster || "https://via.placeholder.com/80x120?text=No+Image";
   const rating = film.imdb_rating ?? film.rating;
@@ -29,8 +29,22 @@ export default function FilmCardLarge({ film }) {
     return () => container.removeEventListener("scroll", handleScroll);
   }, [visibleCount, tropes.length]);
 
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onSelect?.(film);
+    }
+  };
+
   return (
-    <div className="rounded-lg p-4 bg-gray-800 text-gray-100 border border-gray-700">
+    <div
+      className="rounded-lg p-4 bg-gray-800 text-gray-100 border border-gray-700 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400"
+      role="button"
+      tabIndex={0}
+      aria-label={`Open details for ${film.name}`}
+      onClick={() => onSelect?.(film)}
+      onKeyDown={handleKeyDown}
+    >
       <div className="flex gap-4">
         {/* Lazy-loaded poster */}
         <LazyLoadImage

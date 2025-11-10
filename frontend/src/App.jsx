@@ -4,14 +4,17 @@ import SearchBar from "./components/SearchBar";
 import FilterPanel from "./components/FilterPanel";
 import FilmList from "./components/FilmList";
 import NavBar from "./components/Navbar";
-import HomeScreen from "./components/HomeScreen"; // NEW
+import HomeScreen from "./components/HomeScreen";
+
+const ITEMS_PER_PAGE = 20;
 
 function App() {
   const [films, setFilms] = useState([]);
   const [filteredFilms, setFilteredFilms] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // View mode (persist user choice)
+  // View mode
   const [viewMode, setViewMode] = useState(() => (
     localStorage.getItem("viewMode") || "large"
   ));
@@ -30,20 +33,17 @@ function App() {
     tropes: []
   });
 
-  // Panels & loading
   const [showFilters, setShowFilters] = useState(false);
   const [loading, setLoading] = useState(true);
-
-  // Home vs Results
   const [isHome, setIsHome] = useState(true);
 
   useEffect(() => { getFilms(); }, []);
 
   useEffect(() => {
     applyFilters();
+    setCurrentPage(1); // Reset to first page when filters change
   }, [films, searchQuery, filters]);
 
-  // Leave Home automatically if the user types or applies any filter
   const activeFilterCount = Object.entries(filters).reduce((count, [, v]) => {
     if (Array.isArray(v)) return count + (v.length ? 1 : 0);
     return count + (v !== "" ? 1 : 0);
@@ -57,6 +57,7 @@ function App() {
 
   async function getFilms() {
     setLoading(true);
+
     const { data, error } = await supabase
       .from("films")
       .select(`
@@ -72,16 +73,17 @@ function App() {
       setFilms([]);
       setFilteredFilms([]);
     } else {
-      // Flatten nested relations for easier use
       const transformed = (data || []).map(film => ({
         ...film,
         genres: film.film_genres?.map(fg => fg.genres) || [],
         languages: film.film_languages?.map(fl => fl.languages) || [],
-        tropes: film.film_tropes?.map(ft => ft.tropes) || []
+        tropes: film.film_tropes?.map(ft => ft.tropes) || [],
       }));
+
       setFilms(transformed);
       setFilteredFilms(transformed);
     }
+
     setLoading(false);
   }
 
@@ -145,13 +147,12 @@ function App() {
       languages: [],
       tropes: []
     });
+    setCurrentPage(1);
   }
 
   function handleFilterChange(field, value) {
     setFilters(prev => ({ ...prev, [field]: value }));
   }
-
-  // --- Home interactions ---
 
   function handleLogoClick() {
     setIsHome(true);
@@ -176,6 +177,17 @@ function App() {
     setIsHome(false);
   }
 
+  // Pagination
+  const totalPages = Math.ceil(filteredFilms.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedFilms = filteredFilms.slice(startIndex, endIndex);
+
+  function handlePageChange(newPage) {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
@@ -186,10 +198,9 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-900">
-      {/* Make sure Navbar calls onLogoClick when the logo is pressed */}
       <NavBar onLogoClick={handleLogoClick} />
 
-      <div className="max-w-6xl mx-auto mt-6">
+      <div className="max-w-6xl mx-auto mt-6 pb-16">
         <SearchBar
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
@@ -199,7 +210,6 @@ function App() {
           setViewMode={setViewMode}
         />
 
-        {/* Keep the panel toggleable on both Home and Results */}
         <FilterPanel
           filters={filters}
           onFilterChange={handleFilterChange}
@@ -207,7 +217,6 @@ function App() {
           isVisible={showFilters}
         />
 
-        {/* Home vs Results */}
         {isHome ? (
           <HomeScreen
             films={films}
@@ -217,9 +226,13 @@ function App() {
           />
         ) : (
           <FilmList
-            films={filteredFilms}
+            films={paginatedFilms}
+            totalFilms={filteredFilms.length}
             onClearFilters={clearFilters}
             viewMode={viewMode}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
           />
         )}
       </div>

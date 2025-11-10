@@ -1,31 +1,30 @@
 import { X } from "lucide-react";
-import { fetchGenres, fetchLanguages, fetchTropes } from "../services/filters";
+import { fetchAllFilterData } from "../services/filters";
 import { useEffect, useState } from "react";
 import FilterBox from "./FilterBox";
 
 export default function FilterPanel({ filters, onFilterChange, onClearFilters, isVisible }) {
-  const [genres, setGenres] = useState([]);
-  const [languages, setLanguages] = useState([]);
-  const [tropes, setTropes] = useState([]);
+  const [filterData, setFilterData] = useState({
+    genres: [],
+    languages: [],
+    tropes: []
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadFilterData() {
       try {
-        const [genresData, languagesData, tropesData] = await Promise.all([
-          fetchGenres(),
-          fetchLanguages(),
-          fetchTropes()
-        ]);
-        setGenres(genresData);
-        setLanguages(languagesData);
-        setTropes(tropesData);
+        // Single optimized call instead of 3 separate calls
+        const data = await fetchAllFilterData();
+        setFilterData(data);
       } catch (error) {
         console.error('Error loading filter data:', error);
       } finally {
         setLoading(false);
       }
     }
+    
+    // Only load once when component mounts
     loadFilterData();
   }, []);
 
@@ -39,12 +38,13 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
         </div>
       );
     }
+    
     return (
       <>
         <div className="md:col-span-4">
           <FilterBox
             title="Genres"
-            items={genres}
+            items={filterData.genres}
             selectedItems={filters.genres || []}
             onItemToggle={(genre) => {
               const currentGenres = filters.genres || [];
@@ -60,7 +60,7 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
         <div className="md:col-span-4">
           <FilterBox
             title="Languages"
-            items={languages}
+            items={filterData.languages}
             selectedItems={filters.languages || []}
             onItemToggle={(language) => {
               const currentLanguages = filters.languages || [];
@@ -76,7 +76,7 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
         <div className="md:col-span-4">
           <FilterBox
             title="Tropes"
-            items={tropes}
+            items={filterData.tropes}
             selectedItems={filters.tropes || []}
             onItemToggle={(trope) => {
               const currentTropes = filters.tropes || [];
@@ -106,8 +106,7 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-
-        {/*Year*/}
+        {/* Year */}
         <div className="md:col-span-3 gap-4">
           <h3 className="text-lg font-semibold mb-2">Year</h3>
           <div className="flex gap-4 items-center">
@@ -129,7 +128,7 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
           </div>
         </div>
 
-        {/*Rating*/}
+        {/* Rating */}
         <div className="md:col-span-3">
           <h3 className="text-lg font-semibold mb-2">Minimum Rating</h3>
           <input
@@ -144,7 +143,7 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
           />
         </div>
 
-        {/*Director*/}
+        {/* Director */}
         <div className="md:col-span-6">
           <h3 className="text-lg font-semibold mb-2">Director</h3>
           <input

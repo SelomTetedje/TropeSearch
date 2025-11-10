@@ -91,8 +91,8 @@ function addToFailedCache(normalizedTitle) {
 }
 
 // --- Config: which rows to process ---
-const startRow = 30000;
-const endRow = 40000;
+const startRow = 100000;
+const endRow = 120000;
 
 // --- Read CSV ---
 const results = [];

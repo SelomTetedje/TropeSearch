@@ -4,11 +4,25 @@ import SearchBar from "./components/SearchBar";
 import FilterPanel from "./components/FilterPanel";
 import FilmList from "./components/FilmList";
 import NavBar from "./components/Navbar";
+import HomeScreen from "./components/HomeScreen";
+
+const ITEMS_PER_PAGE = 20;
 
 function App() {
   const [films, setFilms] = useState([]);
   const [filteredFilms, setFilteredFilms] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // View mode
+  const [viewMode, setViewMode] = useState(() => (
+    localStorage.getItem("viewMode") || "large"
+  ));
+  useEffect(() => {
+    localStorage.setItem("viewMode", viewMode);
+  }, [viewMode]);
+
+  // Filters
   const [filters, setFilters] = useState({
     minYear: "",
     maxYear: "",
@@ -18,19 +32,32 @@ function App() {
     languages: [],
     tropes: []
   });
+
   const [showFilters, setShowFilters] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isHome, setIsHome] = useState(true);
 
-  useEffect(() => {
-    getFilms();
-  }, []);
+  useEffect(() => { getFilms(); }, []);
 
   useEffect(() => {
     applyFilters();
+    setCurrentPage(1); // Reset to first page when filters change
   }, [films, searchQuery, filters]);
+
+  const activeFilterCount = Object.entries(filters).reduce((count, [, v]) => {
+    if (Array.isArray(v)) return count + (v.length ? 1 : 0);
+    return count + (v !== "" ? 1 : 0);
+  }, 0);
+
+  useEffect(() => {
+    const hasQuery = searchQuery.trim().length > 0;
+    const hasFilters = activeFilterCount > 0;
+    if (hasQuery || hasFilters) setIsHome(false);
+  }, [searchQuery, activeFilterCount]);
 
   async function getFilms() {
     setLoading(true);
+
     const { data, error } = await supabase
       .from("films")
       .select(`
@@ -40,81 +67,69 @@ function App() {
         film_tropes(trope_id, tropes(id, name))
       `)
       .order("name", { ascending: true });
-    
+
     if (error) {
       console.error("Error fetching films:", error);
+      setFilms([]);
+      setFilteredFilms([]);
     } else {
-      // Transform the data to include nested relations in a more usable format
-      const transformedData = data?.map(film => ({
+      const transformed = (data || []).map(film => ({
         ...film,
         genres: film.film_genres?.map(fg => fg.genres) || [],
         languages: film.film_languages?.map(fl => fl.languages) || [],
-        tropes: film.film_tropes?.map(ft => ft.tropes) || []
-      })) || [];
+        tropes: film.film_tropes?.map(ft => ft.tropes) || [],
+      }));
 
-      setFilms(transformedData);
-      setFilteredFilms(transformedData);
+      setFilms(transformed);
+      setFilteredFilms(transformed);
     }
+
     setLoading(false);
   }
 
   function applyFilters() {
     let results = [...films];
 
-    // Search filter
+    // Search
     if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      results = results.filter(film => 
-        film.name?.toLowerCase().includes(query) ||
-        film.director?.toLowerCase().includes(query)
+      const q = searchQuery.toLowerCase();
+      results = results.filter(f =>
+        f.name?.toLowerCase().includes(q) ||
+        f.director?.toLowerCase().includes(q)
       );
     }
 
-    // Year range filter
-    if (filters.minYear) {
-      results = results.filter(film => film.year >= parseInt(filters.minYear));
-    }
-    if (filters.maxYear) {
-      results = results.filter(film => film.year <= parseInt(filters.maxYear));
-    }
+    // Year
+    if (filters.minYear) results = results.filter(f => f.year >= parseInt(filters.minYear));
+    if (filters.maxYear) results = results.filter(f => f.year <= parseInt(filters.maxYear));
 
-    // Rating filter
-    if (filters.minRating) {
-      results = results.filter(film => film.imdb_rating >= parseFloat(filters.minRating));
-    }
+    // Rating
+    if (filters.minRating) results = results.filter(f => (f.imdb_rating ?? 0) >= parseFloat(filters.minRating));
 
-    // Director filter
+    // Director
     if (filters.director) {
-      const directorQuery = filters.director.toLowerCase();
-      results = results.filter(film => 
-        film.director?.toLowerCase().includes(directorQuery)
+      const dq = filters.director.toLowerCase();
+      results = results.filter(f => f.director?.toLowerCase().includes(dq));
+    }
+
+    // Genres
+    if (filters.genres?.length) {
+      results = results.filter(f =>
+        filters.genres.every(g => f.genres.some(fg => fg.id === g.id))
       );
     }
 
-    // Genre filter
-    if (filters.genres && filters.genres.length > 0) {
-      results = results.filter(film =>
-        filters.genres.every(selectedGenre =>
-          film.genres.some(filmGenre => filmGenre.id === selectedGenre.id)
-        )
+    // Languages
+    if (filters.languages?.length) {
+      results = results.filter(f =>
+        filters.languages.every(l => f.languages.some(fl => fl.id === l.id))
       );
     }
 
-    // Language filter
-    if (filters.languages && filters.languages.length > 0) {
-      results = results.filter(film =>
-        filters.languages.every(selectedLanguage =>
-          film.languages.some(filmLanguage => filmLanguage.id === selectedLanguage.id)
-        )
-      );
-    }
-
-    // Trope filter
-    if (filters.tropes && filters.tropes.length > 0) {
-      results = results.filter(film =>
-        filters.tropes.every(selectedTrope =>
-          film.tropes.some(filmTrope => filmTrope.id === selectedTrope.id)
-        )
+    // Tropes
+    if (filters.tropes?.length) {
+      results = results.filter(f =>
+        filters.tropes.every(t => f.tropes.some(ft => ft.id === t.id))
       );
     }
 
@@ -132,36 +147,67 @@ function App() {
       languages: [],
       tropes: []
     });
+    setCurrentPage(1);
   }
 
   function handleFilterChange(field, value) {
     setFilters(prev => ({ ...prev, [field]: value }));
   }
 
-  const activeFilterCount = Object.entries(filters).reduce((count, [key, value]) => {
-    if (Array.isArray(value)) {
-      return count + (value.length > 0 ? 1 : 0);
-    }
-    return count + (value !== "" ? 1 : 0);
-  }, 0);
+  function handleLogoClick() {
+    setIsHome(true);
+    setShowFilters(false);
+    setSearchQuery("");
+    clearFilters();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function handlePickGenre(genre) {
+    setFilters(prev => ({ ...prev, genres: [genre] }));
+    setIsHome(false);
+  }
+
+  function handlePickTrope(trope) {
+    setFilters(prev => ({ ...prev, tropes: [trope] }));
+    setIsHome(false);
+  }
+
+  function handleBrowseAll() {
+    clearFilters();
+    setIsHome(false);
+  }
+
+  // Pagination
+  const totalPages = Math.ceil(filteredFilms.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedFilms = filteredFilms.slice(startIndex, endIndex);
+
+  function handlePageChange(newPage) {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-xl text-gray-600">Loading films...</div>
+        <div className="text-xl text-gray-400">Loading films…</div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-900">
-      <NavBar />
-      <div className="max-w-6xl mx-auto">
+      <NavBar onLogoClick={handleLogoClick} />
+
+      <div className="max-w-6xl mx-auto mt-6 pb-16">
         <SearchBar
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           onToggleFilters={() => setShowFilters(!showFilters)}
           activeFilterCount={activeFilterCount}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
         />
 
         <FilterPanel
@@ -171,10 +217,24 @@ function App() {
           isVisible={showFilters}
         />
 
-        <FilmList
-          films={filteredFilms}
-          onClearFilters={clearFilters}
-        />
+        {isHome ? (
+          <HomeScreen
+            films={films}
+            onPickGenre={handlePickGenre}
+            onPickTrope={handlePickTrope}
+            onBrowseAll={handleBrowseAll}
+          />
+        ) : (
+          <FilmList
+            films={paginatedFilms}
+            totalFilms={filteredFilms.length}
+            onClearFilters={clearFilters}
+            viewMode={viewMode}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,13 @@
+import { useState } from "react";
+import FilmModal from "./FilmModal";
+
 export default function HomeScreen({ films, onPickGenre, onPickTrope, onBrowseAll }) {
+    const [selectedFilm, setSelectedFilm] = useState(null);
     const genreCounts = new Map();
     const tropeCounts = new Map();
+
+    const openFilm = (film) => setSelectedFilm(film);
+    const closeModal = () => setSelectedFilm(null);
   
     for (const f of films) {
       (f.genres || []).forEach(g => genreCounts.set(g.id, { ...g, count: (genreCounts.get(g.id)?.count || 0) + 1 }));
@@ -80,7 +87,20 @@ export default function HomeScreen({ films, onPickGenre, onPickTrope, onBrowseAl
             <h2 className="text-lg font-semibold text-gray-100 mb-3">Top-Rated Picks</h2>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {topRated.map(f => (
-                <div key={f.id} className="rounded-xl bg-gray-800/60 border border-gray-700 p-4 flex gap-3">
+                <div
+                  key={f.id}
+                  className="rounded-xl bg-gray-800/60 border border-gray-700 p-4 flex gap-3 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400"
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Open details for ${f.name}`}
+                  onClick={() => openFilm(f)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      openFilm(f);
+                    }
+                  }}
+                >
                   <img
                     src={f.poster_url || f.poster || "https://via.placeholder.com/80x120?text=No+Image"}
                     alt={`${f.name} poster`}
@@ -105,6 +125,9 @@ export default function HomeScreen({ films, onPickGenre, onPickTrope, onBrowseAl
                 </div>
               ))}
             </div>
+            {selectedFilm && (
+              <FilmModal film={selectedFilm} onClose={closeModal} />
+            )}
           </section>
         )}
       </div>

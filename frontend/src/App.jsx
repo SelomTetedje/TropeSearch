@@ -231,24 +231,25 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-xl text-gray-400">Loading films…</div>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#1C1C1C' }}>
+        <div className="text-xl" style={{ color: '#999999' }}>Loading films…</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen" style={{ backgroundColor: '#1C1C1C' }}>
       <NavBar onLogoClick={handleLogoClick} />
 
       <div className="max-w-6xl mx-auto mt-6 pb-16">
         {error && (
-          <div className="mx-4 mb-4 p-4 bg-red-900/50 border border-red-700 rounded-lg text-red-200">
+          <div className="mx-4 mb-4 p-4 border rounded-lg" style={{ backgroundColor: '#3B3B3B', borderColor: '#EFDB00', color: '#FFFFFF' }}>
             <p className="font-semibold">Error</p>
             <p className="text-sm">{error}</p>
             <button
               onClick={() => window.location.reload()}
-              className="mt-2 px-3 py-1 bg-red-700 hover:bg-red-600 rounded text-sm transition-colors"
+              className="mt-2 px-3 py-1 rounded text-sm transition-opacity hover:opacity-80"
+              style={{ backgroundColor: '#EFDB00', color: '#1C1C1C' }}
             >
               Reload Page
             </button>

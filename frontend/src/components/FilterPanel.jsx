@@ -113,13 +113,14 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
   };
 
   return (
-    <div className="bg-gray-900 text-white rounded-lg p-8 flex flex-col gap-8">
+    <div className="rounded-lg pt-8 px-8 flex flex-col gap-4" style={{ color: '#FFFFFF' }}>
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-yellow-400">Filters</h2>
+        <h2 className="text-2xl font-bold" style={{ color: '#EFDB00' }}>Filters</h2>
         <button
           onClick={handleClearAll}
-          className="text-sm text-gray-400 hover:text-gray-200 flex items-center gap-1"
+          className="text-sm flex items-center gap-1 hover:opacity-80"
+          style={{ color: '#999999' }}
         >
           <X className="w-4 h-4" /> Clear all
         </button>
@@ -132,7 +133,8 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
             type="checkbox"
             checked={enableTropes}
             onChange={(e) => setEnableTropes(e.target.checked)}
-            className="accent-yellow-500 w-4 h-4"
+            className="w-4 h-4"
+            style={{ accentColor: '#EFDB00' }}
           />
           <h3 className="text-lg font-semibold">Tropes</h3>
         </label>
@@ -140,7 +142,7 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
         {/* Selected Tropes Pills */}
         <div className="mb-2 min-h-[24px]">
           {(!filters.tropes || filters.tropes.length === 0) ? (
-            <p className="text-sm text-gray-500 italic">None selected...</p>
+            <p className="text-sm italic" style={{ color: '#999999' }}>None selected...</p>
           ) : (
             <div className="flex flex-wrap gap-2">
               {filters.tropes.map((trope) => (
@@ -150,7 +152,8 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
                     const newList = filters.tropes.filter(t => t.id !== trope.id);
                     onFilterChange("tropes", newList);
                   }}
-                  className="flex items-center gap-1 px-2 py-1 text-sm bg-yellow-500/20 text-yellow-300 rounded-full hover:bg-yellow-500/30 transition-colors"
+                  className="flex items-center gap-1 px-2 py-1 text-sm rounded-full hover:opacity-80 transition-opacity"
+                  style={{ color: '#4C4C4C', backgroundColor: '#EFDB00' }}
                 >
                   {trope.name}
                   <X className="w-3 h-3" />
@@ -187,7 +190,8 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
               type="checkbox"
               checked={enableLanguages}
               onChange={(e) => setEnableLanguages(e.target.checked)}
-              className="accent-yellow-500 w-4 h-4"
+              className="w-4 h-4"
+              style={{ accentColor: '#EFDB00' }}
             />
             <h3 className="text-lg font-semibold">Languages</h3>
           </label>
@@ -195,7 +199,7 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
           {/* Selected Languages Pills */}
           <div className="mb-2 min-h-[24px]">
             {(!filters.languages || filters.languages.length === 0) ? (
-              <p className="text-sm text-gray-500 italic">None selected...</p>
+              <p className="text-sm italic" style={{ color: '#999999' }}>None selected...</p>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {filters.languages.map((language) => (
@@ -205,7 +209,8 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
                       const newList = filters.languages.filter(l => l.id !== language.id);
                       onFilterChange("languages", newList);
                     }}
-                    className="flex items-center gap-1 px-2 py-1 text-sm bg-yellow-500/20 text-yellow-300 rounded-full hover:bg-yellow-500/30 transition-colors"
+                    className="flex items-center gap-1 px-2 py-1 text-sm rounded-full hover:opacity-80 transition-opacity"
+                    style={{ color: '#4C4C4C', backgroundColor: '#EFDB00' }}
                   >
                     {language.name}
                     <X className="w-3 h-3" />
@@ -240,14 +245,15 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
               type="checkbox"
               checked={enableGenres}
               onChange={(e) => setEnableGenres(e.target.checked)}
-              className="accent-yellow-500 w-4 h-4"
+              className="w-4 h-4"
+              style={{ accentColor: '#EFDB00' }}
             />
             <h3 className="text-lg font-semibold">Genres</h3>
           </label>
 
           <div className="mb-2 min-h-[24px]">
             {(!filters.genres || filters.genres.length === 0) ? (
-              <p className="text-sm text-gray-500 italic">None selected...</p>
+              <p className="text-sm italic" style={{ color: '#999999' }}>None selected...</p>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {filters.genres.map((genre) => (
@@ -257,7 +263,8 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
                       const newList = filters.genres.filter(g => g.id !== genre.id);
                       onFilterChange("genres", newList);
                     }}
-                    className="flex items-center gap-1 px-2 py-1 text-sm bg-yellow-500/20 text-yellow-300 rounded-full hover:bg-yellow-500/30 transition-colors"
+                    className="flex items-center gap-1 px-2 py-1 text-sm rounded-full hover:opacity-80 transition-opacity"
+                    style={{ color: '#4C4C4C', backgroundColor: '#EFDB00' }}
                   >
                     {genre.name}
                     <X className="w-3 h-3" />
@@ -295,7 +302,8 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
               type="checkbox"
               checked={enableYear}
               onChange={(e) => setEnableYear(e.target.checked)}
-              className="accent-yellow-500 w-4 h-4"
+              className="w-4 h-4"
+              style={{ accentColor: '#EFDB00' }}
             />
             <h3 className="text-lg font-semibold">Year</h3>
           </label>
@@ -307,24 +315,28 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
               value={localMinYear}
               disabled={!enableYear}
               onChange={(e) => setLocalMinYear(e.target.value)}
-              className={`w-20 px-3 py-1.5 rounded-md focus:outline-none ${
-                enableYear
-                  ? "bg-gray-800 text-white focus:ring-2 focus:ring-yellow-500"
-                  : "bg-gray-700 text-gray-500 cursor-not-allowed"
-              }`}
+              className="w-20 px-3 py-1.5 rounded-md focus:outline-none"
+              style={{
+                backgroundColor: enableYear ? '#4C4C4C' : '#3B3B3B',
+                color: enableYear ? '#FFFFFF' : '#999999',
+                cursor: enableYear ? 'text' : 'not-allowed',
+                borderColor: '#EFDB00'
+              }}
             />
-            <span className="text-gray-400">to</span>
+            <span style={{ color: '#999999' }}>to</span>
             <input
               type="number"
               placeholder="Year"
               value={localMaxYear}
               disabled={!enableYear}
               onChange={(e) => setLocalMaxYear(e.target.value)}
-              className={`w-20 px-3 py-1.5 rounded-md focus:outline-none ${
-                enableYear
-                  ? "bg-gray-800 text-white focus:ring-2 focus:ring-yellow-500"
-                  : "bg-gray-700 text-gray-500 cursor-not-allowed"
-              }`}
+              className="w-20 px-3 py-1.5 rounded-md focus:outline-none"
+              style={{
+                backgroundColor: enableYear ? '#4C4C4C' : '#3B3B3B',
+                color: enableYear ? '#FFFFFF' : '#999999',
+                cursor: enableYear ? 'text' : 'not-allowed',
+                borderColor: '#EFDB00'
+              }}
             />
           </div>
         </div>
@@ -336,7 +348,8 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
               type="checkbox"
               checked={enableRuntime}
               onChange={(e) => setEnableRuntime(e.target.checked)}
-              className="accent-yellow-500 w-4 h-4"
+              className="w-4 h-4"
+              style={{ accentColor: '#EFDB00' }}
             />
             <h3 className="text-lg font-semibold">Runtime</h3>
           </label>
@@ -348,26 +361,30 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
               value={localMinRuntime}
               disabled={!enableRuntime}
               onChange={(e) => setLocalMinRuntime(e.target.value)}
-              className={`w-20 px-3 py-1.5 rounded-md focus:outline-none ${
-                enableRuntime
-                  ? "bg-gray-800 text-white focus:ring-2 focus:ring-yellow-500"
-                  : "bg-gray-700 text-gray-500 cursor-not-allowed"
-              }`}
+              className="w-20 px-3 py-1.5 rounded-md focus:outline-none"
+              style={{
+                backgroundColor: enableRuntime ? '#4C4C4C' : '#3B3B3B',
+                color: enableRuntime ? '#FFFFFF' : '#999999',
+                cursor: enableRuntime ? 'text' : 'not-allowed',
+                borderColor: '#EFDB00'
+              }}
             />
-            <span className="text-gray-400">to</span>
+            <span style={{ color: '#999999' }}>to</span>
             <input
               type="number"
               placeholder="180"
               value={localMaxRuntime}
               disabled={!enableRuntime}
               onChange={(e) => setLocalMaxRuntime(e.target.value)}
-              className={`w-20 px-3 py-1.5 rounded-md focus:outline-none ${
-                enableRuntime
-                  ? "bg-gray-800 text-white focus:ring-2 focus:ring-yellow-500"
-                  : "bg-gray-700 text-gray-500 cursor-not-allowed"
-              }`}
+              className="w-20 px-3 py-1.5 rounded-md focus:outline-none"
+              style={{
+                backgroundColor: enableRuntime ? '#4C4C4C' : '#3B3B3B',
+                color: enableRuntime ? '#FFFFFF' : '#999999',
+                cursor: enableRuntime ? 'text' : 'not-allowed',
+                borderColor: '#EFDB00'
+              }}
             />
-            <span className="text-gray-400">minutes</span>
+            <span style={{ color: '#999999' }}>minutes</span>
           </div>
         </div>
 
@@ -378,7 +395,8 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
               type="checkbox"
               checked={enableRating}
               onChange={(e) => setEnableRating(e.target.checked)}
-              className="accent-yellow-500 w-4 h-4"
+              className="w-4 h-4"
+              style={{ accentColor: '#EFDB00' }}
             />
             <h3 className="text-lg font-semibold">Rating</h3>
           </label>
@@ -445,12 +463,13 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
             }}
           >
             {/* Track */}
-            <div className="absolute top-1/2 left-0 w-full h-[4px] bg-gray-700 rounded-full -translate-y-1/2" />
+            <div className="absolute top-1/2 left-0 w-full h-[4px] rounded-full -translate-y-1/2" style={{ backgroundColor: '#3B3B3B' }} />
 
             {/* Highlight */}
             <div
-              className="rating-highlight absolute top-1/2 h-[4px] bg-yellow-500 rounded-full -translate-y-1/2"
+              className="rating-highlight absolute top-1/2 h-[4px] rounded-full -translate-y-1/2"
               style={{
+                backgroundColor: '#EFDB00',
                 left: `${(localMinRating - 1) / 9 * 100}%`,
                 width: `${(localMaxRating - localMinRating) / 9 * 100}%`,
               }}
@@ -458,10 +477,12 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
 
             {/* Left thumb */}
             <div
-              className={`rating-thumb-left absolute top-1/2 -translate-y-1/2 h-4 w-4 rounded-full border-2 border-black bg-white cursor-pointer ${
+              className={`rating-thumb-left absolute top-1/2 -translate-y-1/2 h-4 w-4 rounded-full border-2 cursor-pointer ${
                 !enableRating ? "opacity-40 cursor-not-allowed" : ""
               }`}
               style={{
+                borderColor: '#1C1C1C',
+                backgroundColor: '#EFDB00',
                 left: `calc(${(localMinRating - 1) / 9 * 100}% - 8px)`,
                 zIndex: 20,
               }}
@@ -469,10 +490,12 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
 
             {/* Right thumb */}
             <div
-              className={`rating-thumb-right absolute top-1/2 -translate-y-1/2 h-4 w-4 rounded-full border-2 border-black bg-white cursor-pointer ${
+              className={`rating-thumb-right absolute top-1/2 -translate-y-1/2 h-4 w-4 rounded-full border-2 cursor-pointer ${
                 !enableRating ? "opacity-40 cursor-not-allowed" : ""
               }`}
               style={{
+                borderColor: '#1C1C1C',
+                backgroundColor: '#EFDB00',
                 left: `calc(${(localMaxRating - 1) / 9 * 100}% - 8px)`,
                 zIndex: 10,
               }}
@@ -480,7 +503,7 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
           </div>
 
           {/* Labels */}
-          <div className="flex justify-between text-sm text-gray-400 mt-3">
+          <div className="flex justify-between text-sm mt-3" style={{ color: '#999999' }}>
             {[...Array(10)].map((_, i) => (
               <span key={i + 1}>★{i + 1}</span>
             ))}

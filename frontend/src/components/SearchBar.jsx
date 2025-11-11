@@ -12,14 +12,19 @@ export default function SearchBar({
     <div className="rounded-lg shadow-sm mb-4">
       <div className="flex gap-3 items-center justify-between">
         {/* Search input */}
-        <div className="flex-1 relative text-gray-400">
+        <div className="flex-1 relative" style={{ color: '#999999' }}>
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" />
           <input
             type="text"
             placeholder="Search by title..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 placeholder-gray-400 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
+            className="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none"
+            style={{
+              backgroundColor: '#3B3B3B',
+              color: '#FFFFFF',
+              borderColor: '#4C4C4C'
+            }}
           />
         </div>
 
@@ -28,45 +33,50 @@ export default function SearchBar({
           {/* Filters */}
           <button
             onClick={onToggleFilters}
-            className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-black rounded-lg hover:bg-yellow-600 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg transition-opacity hover:opacity-90"
+            style={{ backgroundColor: '#EFDB00', color: '#1C1C1C' }}
           >
             <Funnel className="w-5 h-5" />
             Filters
             {activeFilterCount > 0 && (
-              <span className="bg-yellow-300 text-xs px-2 py-0.5 rounded-full">
+              <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ backgroundColor: '#4C4C4C', color: '#EFDB00' }}>
                 {activeFilterCount}
               </span>
             )}
           </button>
 
           {/* View toggle (icons + text) */}
-          <div className="flex items-stretch bg-gray-700 rounded-lg overflow-hidden">
+          <div className="flex items-stretch rounded-lg overflow-hidden" style={{ backgroundColor: '#3B3B3B' }}>
             <button
               type="button"
               onClick={() => setViewMode("compact")}
-              className={`px-3 py-2 flex items-center gap-1 hover:bg-gray-600 transition-colors ${
-                viewMode === "compact" ? "bg-gray-600" : ""
-              }`}
+              className="px-3 py-2 flex items-center gap-1 transition-colors"
+              style={{
+                backgroundColor: viewMode === "compact" ? '#4C4C4C' : 'transparent',
+                color: '#FFFFFF'
+              }}
               title="Small list view"
               aria-pressed={viewMode === "compact"}
             >
-              <List className="w-4 h-4 text-gray-200" />
-              <span className="text-sm text-gray-200">Small</span>
+              <List className="w-4 h-4" />
+              <span className="text-sm">Small</span>
             </button>
 
-            <div className="w-px bg-gray-600" />
+            <div className="w-px" style={{ backgroundColor: '#4C4C4C' }} />
 
             <button
               type="button"
               onClick={() => setViewMode("large")}
-              className={`px-3 py-2 flex items-center gap-1 hover:bg-gray-600 transition-colors ${
-                viewMode === "large" ? "bg-gray-600" : ""
-              }`}
+              className="px-3 py-2 flex items-center gap-1 transition-colors"
+              style={{
+                backgroundColor: viewMode === "large" ? '#4C4C4C' : 'transparent',
+                color: '#FFFFFF'
+              }}
               title="Large poster view"
               aria-pressed={viewMode === "large"}
             >
-              <LayoutGrid className="w-4 h-4 text-gray-200" />
-              <span className="text-sm text-gray-200">Large</span>
+              <LayoutGrid className="w-4 h-4" />
+              <span className="text-sm">Large</span>
             </button>
           </div>
         </div>

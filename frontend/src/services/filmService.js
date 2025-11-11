@@ -18,9 +18,10 @@ export async function fetchFilmDetails(filmId) {
     .select(`
       id,
       plot,
-      language,
-      genre,
-      imdb_id
+      imdb_id,
+      film_genres(genre_id, genres(id, name)),
+      film_languages(language_id, languages(id, name)),
+      film_tropes(trope_id, tropes(id, name))
     `)
     .eq("id", filmId)
     .single();
@@ -30,7 +31,15 @@ export async function fetchFilmDetails(filmId) {
     return null;
   }
 
+  // Transform to match the same structure as the main films query
+  const transformed = {
+    ...data,
+    genres: data.film_genres?.map(fg => fg.genres) || [],
+    languages: data.film_languages?.map(fl => fl.languages) || [],
+    tropes: data.film_tropes?.map(ft => ft.tropes) || [],
+  };
+
   // Cache the result for 60 minutes (film details rarely change)
-  setCacheItem(CACHE_KEY, data, 60);
-  return data;
+  setCacheItem(CACHE_KEY, transformed, 60);
+  return transformed;
 }

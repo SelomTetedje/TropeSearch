@@ -15,20 +15,25 @@ export default function FilterBox({ title, items, selectedItems, onItemToggle, p
 
       {/* Search Input */}
       <div className="relative w-full">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#999999' }} />
         <input
           type="text"
           placeholder={placeholder}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-9 pr-3 py-1.5 bg-gray-800 text-white rounded-tl-md rounded-tr-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+          className="w-full pl-9 pr-3 py-1.5 rounded-tl-md rounded-tr-md focus:outline-none"
+          style={{
+            backgroundColor: '#4C4C4C',
+            color: '#FFFFFF',
+            borderColor: '#EFDB00'
+          }}
         />
       </div>
 
       {/* Scrollable List */}
-      <div className="bg-gray-700 rounded-bl-md rounded-br-md p-2 h-44 overflow-y-auto space-y-1.5">
+      <div className="rounded-bl-md rounded-br-md p-2 h-44 overflow-y-auto space-y-1.5" style={{ backgroundColor: '#3B3B3B' }}>
         {filteredItems.length === 0 ? (
-          <div className="text-gray-500 text-sm text-center py-2">No results...</div>
+          <div className="text-sm text-center py-2" style={{ color: '#999999' }}>No results...</div>
         ) : (
           filteredItems.map((item) => {
             const isSelected = selectedItems.some(selected => selected.id === item.id);
@@ -36,14 +41,18 @@ export default function FilterBox({ title, items, selectedItems, onItemToggle, p
               <div
                 key={item.id}
                 onClick={() => onItemToggle(item)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-md cursor-pointer transition-colors
-                ${isSelected ? "bg-yellow-500 text-black" : "hover:bg-gray-700 text-white"}`}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-md cursor-pointer transition-colors"
+                style={{
+                  backgroundColor: isSelected ? '#EFDB00' : 'transparent',
+                  color: isSelected ? '#1C1C1C' : '#FFFFFF'
+                }}
               >
                 <input
                   type="checkbox"
                   checked={isSelected}
                   onChange={() => onItemToggle(item)}
-                  className="rounded border-gray-400 accent-yellow-500"
+                  className="rounded"
+                  style={{ accentColor: '#EFDB00' }}
                 />
                 <span className="text-sm">{item.name}</span>
               </div>

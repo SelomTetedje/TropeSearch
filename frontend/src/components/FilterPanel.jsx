@@ -8,14 +8,20 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
   const [languages, setLanguages] = useState([]);
   const [tropes, setTropes] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // Toggles for each filter section
   const [enableTropes, setEnableTropes] = useState(true);
   const [enableLanguages, setEnableLanguages] = useState(true);
   const [enableGenres, setEnableGenres] = useState(true);
   const [enableYear, setEnableYear] = useState(true);
   const [enableRuntime, setEnableRuntime] = useState(true);
   const [enableRating, setEnableRating] = useState(true);
+
+  const [localMinRating, setLocalMinRating] = useState(filters.minRating || 1);
+  const [localMaxRating, setLocalMaxRating] = useState(filters.maxRating || 10);
+
+  useEffect(() => {
+    setLocalMinRating(filters.minRating || 1);
+    setLocalMaxRating(filters.maxRating || 10);
+  }, [filters.minRating, filters.maxRating]);
 
   useEffect(() => {
     async function loadFilterData() {
@@ -47,8 +53,11 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
     onFilterChange("maxYear", "");
     onFilterChange("minRuntime", "");
     onFilterChange("maxRuntime", "");
-    onFilterChange("minRating", 1);
-    onFilterChange("maxRating", 10);
+    onFilterChange("minRating", "");
+    onFilterChange("maxRating", "");
+
+    setLocalMinRating(1);
+    setLocalMaxRating(10);
 
     setEnableTropes(false);
     setEnableLanguages(false);
@@ -265,17 +274,24 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
             className="relative w-full h-8 mt-2 select-none"
             onMouseDown={(e) => {
               if (!enableRating) return;
-              const rect = e.currentTarget.getBoundingClientRect();
+              const container = e.currentTarget;
+              const rect = container.getBoundingClientRect();
               const clickX = e.clientX - rect.left;
               const clickRatio = clickX / rect.width;
               const clickedValue = 1 + clickRatio * 9;
 
-              // decide which thumb to move
-              const leftDist = Math.abs(clickedValue - (filters.minRating || 1));
-              const rightDist = Math.abs(clickedValue - (filters.maxRating || 10));
+              const highlight = container.querySelector('.rating-highlight');
+              const leftThumb = container.querySelector('.rating-thumb-left');
+              const rightThumb = container.querySelector('.rating-thumb-right');
+
+              const leftDist = Math.abs(clickedValue - localMinRating);
+              const rightDist = Math.abs(clickedValue - localMaxRating);
               const moveLeft =
                 leftDist < rightDist ||
-                clickedValue < (filters.minRating + filters.maxRating) / 2;
+                clickedValue < (localMinRating + localMaxRating) / 2;
+
+              let currentMin = localMinRating;
+              let currentMax = localMaxRating;
 
               const mouseMove = (moveEvent) => {
                 const posX = moveEvent.clientX - rect.left;
@@ -283,17 +299,32 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
                 const value = 1 + ratio * 9;
 
                 if (moveLeft) {
-                  const newMin = Math.min(Math.floor(value), (filters.maxRating || 10) - 1);
-                  onFilterChange("minRating", newMin);
+                  const newMin = Math.max(1, Math.min(value, currentMax - 1));
+                  currentMin = newMin;
+                  if (leftThumb) leftThumb.style.left = `calc(${((newMin - 1) / 9) * 100}% - 8px)`;
+                  if (highlight) {
+                    highlight.style.left = `${((newMin - 1) / 9) * 100}%`;
+                    highlight.style.width = `${((currentMax - newMin) / 9) * 100}%`;
+                  }
                 } else {
-                  const newMax = Math.max(Math.ceil(value), (filters.minRating || 1) + 1);
-                  onFilterChange("maxRating", newMax);
+                  const newMax = Math.min(10, Math.max(value, currentMin + 1));
+                  currentMax = newMax;
+                  if (rightThumb) rightThumb.style.left = `calc(${((newMax - 1) / 9) * 100}% - 8px)`;
+                  if (highlight) {
+                    highlight.style.width = `${((newMax - currentMin) / 9) * 100}%`;
+                  }
                 }
               };
 
               const stopMove = () => {
                 window.removeEventListener("mousemove", mouseMove);
                 window.removeEventListener("mouseup", stopMove);
+                const finalMin = Math.round(currentMin);
+                const finalMax = Math.round(currentMax);
+                setLocalMinRating(finalMin);
+                setLocalMaxRating(finalMax);
+                onFilterChange("minRating", finalMin);
+                onFilterChange("maxRating", finalMax);
               };
 
               window.addEventListener("mousemove", mouseMove);
@@ -305,31 +336,31 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
 
             {/* Highlight */}
             <div
-              className="absolute top-1/2 h-[4px] bg-yellow-500 rounded-full -translate-y-1/2 transition-all duration-75"
+              className="rating-highlight absolute top-1/2 h-[4px] bg-yellow-500 rounded-full -translate-y-1/2"
               style={{
-                left: `${((filters.minRating || 1) - 1) / 9 * 100}%`,
-                width: `${((filters.maxRating || 10) - (filters.minRating || 1)) / 9 * 100}%`,
+                left: `${(localMinRating - 1) / 9 * 100}%`,
+                width: `${(localMaxRating - localMinRating) / 9 * 100}%`,
               }}
             />
 
             {/* Left thumb */}
             <div
-              className={`absolute top-1/2 -translate-y-1/2 h-4 w-4 rounded-full border-2 border-black bg-white cursor-pointer ${
+              className={`rating-thumb-left absolute top-1/2 -translate-y-1/2 h-4 w-4 rounded-full border-2 border-black bg-white cursor-pointer ${
                 !enableRating ? "opacity-40 cursor-not-allowed" : ""
               }`}
               style={{
-                left: `calc(${((filters.minRating || 1) - 1) / 9 * 100}% - 8px)`,
+                left: `calc(${(localMinRating - 1) / 9 * 100}% - 8px)`,
                 zIndex: 20,
               }}
             ></div>
 
             {/* Right thumb */}
             <div
-              className={`absolute top-1/2 -translate-y-1/2 h-4 w-4 rounded-full border-2 border-black bg-white cursor-pointer ${
+              className={`rating-thumb-right absolute top-1/2 -translate-y-1/2 h-4 w-4 rounded-full border-2 border-black bg-white cursor-pointer ${
                 !enableRating ? "opacity-40 cursor-not-allowed" : ""
               }`}
               style={{
-                left: `calc(${((filters.maxRating || 10) - 1) / 9 * 100}% - 8px)`,
+                left: `calc(${(localMaxRating - 1) / 9 * 100}% - 8px)`,
                 zIndex: 10,
               }}
             ></div>
@@ -343,19 +374,6 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
           </div>
         </div>
       </div>
-
-      {/* Search Button */}
-      <div className="flex justify-center mt-10">
-        <button
-          onClick={() => console.log("Search clicked")}
-          className="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold px-10 py-3 rounded-full transition"
-        >
-          Search
-        </button>
-      </div>
-
-      {/* Footer */}
-      <div className="text-center text-gray-400 text-sm mt-4">TropeSearch</div>
     </div>
   );
 }

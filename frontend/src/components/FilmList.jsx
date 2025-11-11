@@ -86,7 +86,7 @@ export default function FilmList({
 
   return (
     <>
-    <div className="rounded-lg shadow-sm p-6 bg-gray-800">
+    <div className="rounded-lg shadow-sm py-6 bg-gray-900">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold text-gray-100">
           {totalFilms} {totalFilms === 1 ? "Film" : "Films"} Found

@@ -1,8 +1,10 @@
 // src/components/Navbar.jsx
+import CacheManager from "./CacheManager";
+
 export default function NavBar({ onLogoClick }) {
     return (
       <nav className="bg-gray-900 sticky top-0 z-20">
-        <div className="max-w-6xl mx-auto px-4 py-3">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <button
             onClick={onLogoClick}
             className="text-2xl font-extrabold text-yellow-400 hover:opacity-90 active:opacity-80"
@@ -10,6 +12,7 @@ export default function NavBar({ onLogoClick }) {
           >
             TropeSearch
           </button>
+          <CacheManager />
         </div>
       </nav>
     );

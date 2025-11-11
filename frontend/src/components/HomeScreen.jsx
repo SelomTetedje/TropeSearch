@@ -118,9 +118,6 @@ export default function HomeScreen({ films, onPickGenre, onPickTrope, onBrowseAl
                     <p className="text-xs text-gray-400 mt-1">
                       {f.year ? `Year: ${f.year} • ` : ""}{f.runtime ? `Runtime: ${f.runtime}m` : ""}
                     </p>
-                    {f.plot && (
-                      <p className="text-sm text-gray-300 mt-1 line-clamp-2">{f.plot}</p>
-                    )}
                   </div>
                 </div>
               ))}

@@ -7,12 +7,10 @@ export default function FilmCardLarge({ film, onSelect }) {
     film.poster_url || film.poster || "https://via.placeholder.com/80x120?text=No+Image";
   const rating = film.imdb_rating ?? film.rating;
 
-  // Handle tropes pagination
   const tropes = Array.isArray(film.tropes) ? film.tropes : [];
   const [visibleCount, setVisibleCount] = useState(15);
   const containerRef = useRef(null);
 
-  // Lazy-load more tropes when scrolled near the end
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -66,8 +64,12 @@ export default function FilmCardLarge({ film, onSelect }) {
             )}
           </div>
 
-          {/* Plot */}
-          {film.plot && <p className="text-sm text-gray-300 mt-2">{film.plot}</p>}
+          {/* Year and Runtime */}
+          {(film.year || film.runtime) && (
+            <p className="text-sm text-gray-400 mt-2">
+              {film.year ? `${film.year}` : ""}{film.year && film.runtime ? " • " : ""}{film.runtime ? `${film.runtime} min` : ""}
+            </p>
+          )}
 
           {/* Tropes Section */}
           {tropes.length > 0 && (

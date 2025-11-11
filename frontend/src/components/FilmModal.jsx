@@ -1,8 +1,23 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
+import { fetchFilmDetails } from "../services/filmService";
 
 export default function FilmModal({ film, onClose }) {
   const [hasPoster, setHasPoster] = useState(Boolean(film?.poster_url && film.poster_url !== 'N/A'));
+  const [fullDetails, setFullDetails] = useState(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
+
+  // Fetch full film details when modal opens
+  useEffect(() => {
+    async function loadDetails() {
+      if (!film?.id) return;
+      setLoadingDetails(true);
+      const details = await fetchFilmDetails(film.id);
+      setFullDetails(details);
+      setLoadingDetails(false);
+    }
+    loadDetails();
+  }, [film?.id]);
 
   useEffect(() => {
     function onKey(e) {
@@ -61,13 +76,29 @@ export default function FilmModal({ film, onClose }) {
               {film.runtime && <div className="text-sm text-gray-600">{film.runtime} min</div>}
             </div>
 
-            {film.plot && <p className="text-gray-700 dark:text-gray-300 mb-3">{film.plot}</p>}
+            {loadingDetails ? (
+              <p className="text-gray-500 text-sm mb-3">Loading details...</p>
+            ) : (
+              <>
+                {(fullDetails?.plot || film.plot) && (
+                  <p className="text-gray-700 dark:text-gray-300 mb-3">
+                    {fullDetails?.plot || film.plot}
+                  </p>
+                )}
 
-            <div className="text-sm text-gray-600 space-y-1">
-              {film.language && <div><strong>Language:</strong> {film.language}</div>}
-              {film.genre && <div><strong>Genre:</strong> {film.genre}</div>}
-              {film.imdb_id && <div><strong>IMDb ID:</strong> {film.imdb_id}</div>}
-            </div>
+                <div className="text-sm text-gray-600 space-y-1">
+                  {(fullDetails?.language || film.language) && (
+                    <div><strong>Language:</strong> {fullDetails?.language || film.language}</div>
+                  )}
+                  {(fullDetails?.genre || film.genre) && (
+                    <div><strong>Genre:</strong> {fullDetails?.genre || film.genre}</div>
+                  )}
+                  {(fullDetails?.imdb_id || film.imdb_id) && (
+                    <div><strong>IMDb ID:</strong> {fullDetails?.imdb_id || film.imdb_id}</div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

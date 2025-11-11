@@ -5,6 +5,7 @@ import FilterPanel from "./components/FilterPanel";
 import FilmList from "./components/FilmList";
 import NavBar from "./components/Navbar";
 import HomeScreen from "./components/HomeScreen";
+import { getCacheItem, setCacheItem } from "./utils/cache";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -27,6 +28,9 @@ function App() {
     minYear: "",
     maxYear: "",
     minRating: "",
+    maxRating: "",
+    minRuntime: "",
+    maxRuntime: "",
     director: "",
     genres: [],
     languages: [],
@@ -36,6 +40,7 @@ function App() {
   const [showFilters, setShowFilters] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isHome, setIsHome] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => { getFilms(); }, []);
 
@@ -58,10 +63,27 @@ function App() {
   async function getFilms() {
     setLoading(true);
 
+    const CACHE_KEY = "films_data";
+    const cachedFilms = getCacheItem(CACHE_KEY);
+
+    if (cachedFilms) {
+      console.log("Loading films from cache");
+      setFilms(cachedFilms);
+      setFilteredFilms(cachedFilms);
+      setLoading(false);
+      return;
+    }
+
     const { data, error } = await supabase
       .from("films")
       .select(`
-        *,
+        id,
+        name,
+        year,
+        runtime,
+        imdb_rating,
+        poster_url,
+        director,
         film_genres(genre_id, genres(id, name)),
         film_languages(language_id, languages(id, name)),
         film_tropes(trope_id, tropes(id, name))
@@ -70,9 +92,11 @@ function App() {
 
     if (error) {
       console.error("Error fetching films:", error);
+      setError("Unable to connect to database. Please check your internet connection and refresh.");
       setFilms([]);
       setFilteredFilms([]);
     } else {
+      setError(null);
       const transformed = (data || []).map(film => ({
         ...film,
         genres: film.film_genres?.map(fg => fg.genres) || [],
@@ -82,6 +106,9 @@ function App() {
 
       setFilms(transformed);
       setFilteredFilms(transformed);
+
+      setCacheItem(CACHE_KEY, transformed, 30);
+      console.log("Films cached for 30 minutes");
     }
 
     setLoading(false);
@@ -105,6 +132,11 @@ function App() {
 
     // Rating
     if (filters.minRating) results = results.filter(f => (f.imdb_rating ?? 0) >= parseFloat(filters.minRating));
+    if (filters.maxRating) results = results.filter(f => (f.imdb_rating ?? 0) <= parseFloat(filters.maxRating));
+
+    // Runtime
+    if (filters.minRuntime) results = results.filter(f => f.runtime >= parseInt(filters.minRuntime));
+    if (filters.maxRuntime) results = results.filter(f => f.runtime <= parseInt(filters.maxRuntime));
 
     // Director
     if (filters.director) {
@@ -142,6 +174,9 @@ function App() {
       minYear: "",
       maxYear: "",
       minRating: "",
+      maxRating: "",
+      minRuntime: "",
+      maxRuntime: "",
       director: "",
       genres: [],
       languages: [],
@@ -201,6 +236,19 @@ function App() {
       <NavBar onLogoClick={handleLogoClick} />
 
       <div className="max-w-6xl mx-auto mt-6 pb-16">
+        {error && (
+          <div className="mx-4 mb-4 p-4 bg-red-900/50 border border-red-700 rounded-lg text-red-200">
+            <p className="font-semibold">Error</p>
+            <p className="text-sm">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-2 px-3 py-1 bg-red-700 hover:bg-red-600 rounded text-sm transition-colors"
+            >
+              Reload Page
+            </button>
+          </div>
+        )}
+
         <SearchBar
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}

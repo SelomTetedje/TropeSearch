@@ -31,7 +31,7 @@ export default function FilmCard({ film, index, onSelect }) {
       <div className="justify-self-end">
         {film.imdb_rating ? (
           <span className="bg-yellow-500/20 text-yellow-300 px-2 py-0.5 rounded-full text-sm font-semibold">
-            �-? {Number(film.imdb_rating).toFixed(1)}
+            ⭐ {Number(film.imdb_rating).toFixed(1)}
           </span>
         ) : (
           <span className="text-gray-500 text-sm">N/A</span>

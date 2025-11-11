@@ -113,7 +113,7 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
   };
 
   return (
-    <div className="rounded-lg pt-8 px-8 flex flex-col gap-4" style={{ color: '#FFFFFF' }}>
+    <div className="rounded-lg pt-8 px-8s flex flex-col gap-4" style={{ color: '#FFFFFF' }}>
       {/* Header */}
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold" style={{ color: '#EFDB00' }}>Filters</h2>

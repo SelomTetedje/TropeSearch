@@ -47,7 +47,7 @@ export default function FilmList({
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
           className="p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors hover:opacity-80"
-          style={{ color: '#FFFFFF' }}
+          style={{ backgroundColor: '#3B3B3B', color: '#FFFFFF' }}
           aria-label="Previous page"
         >
           <ChevronLeft className="w-5 h-5" />
@@ -91,10 +91,10 @@ export default function FilmList({
     <>
     <div className="rounded-lg shadow-sm py-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold" style={{ color: '#FFFFFF' }}>
+        <h2 className="text-lg font-semibold text-gray-100">
           {totalFilms} {totalFilms === 1 ? "Film" : "Films"} Found
           {totalPages > 1 && (
-            <span className="text-sm ml-2" style={{ color: '#999999' }}>
+            <span className="text-sm text-gray-400 ml-2">
               (Page {currentPage} of {totalPages})
             </span>
           )}
@@ -102,12 +102,11 @@ export default function FilmList({
       </div>
 
       {totalFilms === 0 ? (
-        <div className="text-center py-12" style={{ color: '#FFFFFF' }}>
+        <div className="text-center py-12 text-gray-200">
           <p className="text-lg">No films found matching your criteria</p>
           <button
             onClick={onClearFilters}
-            className="mt-4 font-medium hover:opacity-80"
-            style={{ color: '#EFDB00' }}
+            className="mt-4 text-blue-600 hover:text-blue-700 font-medium"
           >
             Clear filters
           </button>

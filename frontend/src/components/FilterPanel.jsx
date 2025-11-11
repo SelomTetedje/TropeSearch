@@ -17,11 +17,51 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
 
   const [localMinRating, setLocalMinRating] = useState(filters.minRating || 1);
   const [localMaxRating, setLocalMaxRating] = useState(filters.maxRating || 10);
+  const [localMinYear, setLocalMinYear] = useState(filters.minYear || "");
+  const [localMaxYear, setLocalMaxYear] = useState(filters.maxYear || "");
+  const [localMinRuntime, setLocalMinRuntime] = useState(filters.minRuntime || "");
+  const [localMaxRuntime, setLocalMaxRuntime] = useState(filters.maxRuntime || "");
 
   useEffect(() => {
     setLocalMinRating(filters.minRating || 1);
     setLocalMaxRating(filters.maxRating || 10);
   }, [filters.minRating, filters.maxRating]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localMinYear !== filters.minYear) {
+        onFilterChange("minYear", localMinYear);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [localMinYear]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localMaxYear !== filters.maxYear) {
+        onFilterChange("maxYear", localMaxYear);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [localMaxYear]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localMinRuntime !== filters.minRuntime) {
+        onFilterChange("minRuntime", localMinRuntime);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [localMinRuntime]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localMaxRuntime !== filters.maxRuntime) {
+        onFilterChange("maxRuntime", localMaxRuntime);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [localMaxRuntime]);
 
   useEffect(() => {
     async function loadFilterData() {
@@ -56,8 +96,13 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
     onFilterChange("minRating", "");
     onFilterChange("maxRating", "");
 
+    // Reset local state
     setLocalMinRating(1);
     setLocalMaxRating(10);
+    setLocalMinYear("");
+    setLocalMaxYear("");
+    setLocalMinRuntime("");
+    setLocalMaxRuntime("");
 
     setEnableTropes(false);
     setEnableLanguages(false);
@@ -92,6 +137,29 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
           <h3 className="text-lg font-semibold">Tropes</h3>
         </label>
 
+        {/* Selected Tropes Pills */}
+        <div className="mb-2 min-h-[24px]">
+          {(!filters.tropes || filters.tropes.length === 0) ? (
+            <p className="text-sm text-gray-500 italic">None selected...</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {filters.tropes.map((trope) => (
+                <button
+                  key={trope.id}
+                  onClick={() => {
+                    const newList = filters.tropes.filter(t => t.id !== trope.id);
+                    onFilterChange("tropes", newList);
+                  }}
+                  className="flex items-center gap-1 px-2 py-1 text-sm bg-yellow-500/20 text-yellow-300 rounded-full hover:bg-yellow-500/30 transition-colors"
+                >
+                  {trope.name}
+                  <X className="w-3 h-3" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
         {!loading && (
           <FilterBox
             title=""
@@ -124,6 +192,29 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
             <h3 className="text-lg font-semibold">Languages</h3>
           </label>
 
+          {/* Selected Languages Pills */}
+          <div className="mb-2 min-h-[24px]">
+            {(!filters.languages || filters.languages.length === 0) ? (
+              <p className="text-sm text-gray-500 italic">None selected...</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {filters.languages.map((language) => (
+                  <button
+                    key={language.id}
+                    onClick={() => {
+                      const newList = filters.languages.filter(l => l.id !== language.id);
+                      onFilterChange("languages", newList);
+                    }}
+                    className="flex items-center gap-1 px-2 py-1 text-sm bg-yellow-500/20 text-yellow-300 rounded-full hover:bg-yellow-500/30 transition-colors"
+                  >
+                    {language.name}
+                    <X className="w-3 h-3" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {!loading && (
             <FilterBox
               title=""
@@ -153,6 +244,28 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
             />
             <h3 className="text-lg font-semibold">Genres</h3>
           </label>
+
+          <div className="mb-2 min-h-[24px]">
+            {(!filters.genres || filters.genres.length === 0) ? (
+              <p className="text-sm text-gray-500 italic">None selected...</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {filters.genres.map((genre) => (
+                  <button
+                    key={genre.id}
+                    onClick={() => {
+                      const newList = filters.genres.filter(g => g.id !== genre.id);
+                      onFilterChange("genres", newList);
+                    }}
+                    className="flex items-center gap-1 px-2 py-1 text-sm bg-yellow-500/20 text-yellow-300 rounded-full hover:bg-yellow-500/30 transition-colors"
+                  >
+                    {genre.name}
+                    <X className="w-3 h-3" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           {!loading && (
             <FilterBox
@@ -191,9 +304,9 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
             <input
               type="number"
               placeholder="Year"
-              value={filters.minYear || ""}
+              value={localMinYear}
               disabled={!enableYear}
-              onChange={(e) => onFilterChange("minYear", e.target.value)}
+              onChange={(e) => setLocalMinYear(e.target.value)}
               className={`w-20 px-3 py-1.5 rounded-md focus:outline-none ${
                 enableYear
                   ? "bg-gray-800 text-white focus:ring-2 focus:ring-yellow-500"
@@ -204,9 +317,9 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
             <input
               type="number"
               placeholder="Year"
-              value={filters.maxYear || ""}
+              value={localMaxYear}
               disabled={!enableYear}
-              onChange={(e) => onFilterChange("maxYear", e.target.value)}
+              onChange={(e) => setLocalMaxYear(e.target.value)}
               className={`w-20 px-3 py-1.5 rounded-md focus:outline-none ${
                 enableYear
                   ? "bg-gray-800 text-white focus:ring-2 focus:ring-yellow-500"
@@ -232,9 +345,9 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
             <input
               type="number"
               placeholder="0"
-              value={filters.minRuntime || ""}
+              value={localMinRuntime}
               disabled={!enableRuntime}
-              onChange={(e) => onFilterChange("minRuntime", e.target.value)}
+              onChange={(e) => setLocalMinRuntime(e.target.value)}
               className={`w-20 px-3 py-1.5 rounded-md focus:outline-none ${
                 enableRuntime
                   ? "bg-gray-800 text-white focus:ring-2 focus:ring-yellow-500"
@@ -245,9 +358,9 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
             <input
               type="number"
               placeholder="180"
-              value={filters.maxRuntime || ""}
+              value={localMaxRuntime}
               disabled={!enableRuntime}
-              onChange={(e) => onFilterChange("maxRuntime", e.target.value)}
+              onChange={(e) => setLocalMaxRuntime(e.target.value)}
               className={`w-20 px-3 py-1.5 rounded-md focus:outline-none ${
                 enableRuntime
                   ? "bg-gray-800 text-white focus:ring-2 focus:ring-yellow-500"

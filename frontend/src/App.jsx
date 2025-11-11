@@ -135,8 +135,14 @@ function App() {
     if (filters.maxRating) results = results.filter(f => (f.imdb_rating ?? 0) <= parseFloat(filters.maxRating));
 
     // Runtime
-    if (filters.minRuntime) results = results.filter(f => f.runtime >= parseInt(filters.minRuntime));
-    if (filters.maxRuntime) results = results.filter(f => f.runtime <= parseInt(filters.maxRuntime));
+    if (filters.minRuntime) {
+      const minRuntime = parseInt(filters.minRuntime);
+      results = results.filter(f => f.runtime && f.runtime >= minRuntime);
+    }
+    if (filters.maxRuntime) {
+      const maxRuntime = parseInt(filters.maxRuntime);
+      results = results.filter(f => f.runtime && f.runtime <= maxRuntime);
+    }
 
     // Director
     if (filters.director) {

@@ -9,7 +9,7 @@ export default function FilterBox({ title, items, selectedItems, onItemToggle, p
   );
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col">
       {/* Title */}
       <h3 className="text-lg font-semibold text-left">{title}</h3>
 
@@ -21,12 +21,12 @@ export default function FilterBox({ title, items, selectedItems, onItemToggle, p
           placeholder={placeholder}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-9 pr-3 py-1.5 bg-gray-800 text-white rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+          className="w-full pl-9 pr-3 py-1.5 bg-gray-800 text-white rounded-tl-md rounded-tr-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500"
         />
       </div>
 
       {/* Scrollable List */}
-      <div className="bg-gray-800 rounded-md p-2 h-44 overflow-y-auto space-y-1.5 border border-gray-700">
+      <div className="bg-gray-700 rounded-bl-md rounded-br-md p-2 h-44 overflow-y-auto space-y-1.5">
         {filteredItems.length === 0 ? (
           <div className="text-gray-500 text-sm text-center py-2">No results...</div>
         ) : (

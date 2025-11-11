@@ -40,7 +40,6 @@ export async function fetchGenres() {
 
   if (error) throw error;
 
-  // Cache for 60 minutes (genres rarely change)
   setCacheItem(CACHE_KEY, data, 60);
   return data;
 }
@@ -61,7 +60,6 @@ export async function fetchLanguages() {
 
   if (error) throw error;
 
-  // Cache for 60 minutes (languages rarely change)
   setCacheItem(CACHE_KEY, data, 60);
   return data;
 }
@@ -82,7 +80,6 @@ export async function fetchTropes() {
 
   if (error) throw error;
 
-  // Cache for 60 minutes (tropes rarely change)
   setCacheItem(CACHE_KEY, data, 60);
   return data;
 }

@@ -1,8 +1,3 @@
-/**
- * LocalStorage cache utility with TTL (Time To Live)
- * Reduces Supabase egress by caching data locally
- */
-
 const CACHE_VERSION = "v1"; // Increment this to invalidate all caches
 
 /**

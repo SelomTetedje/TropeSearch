@@ -241,9 +241,9 @@ function App() {
     <div className="min-h-screen" style={{ backgroundColor: '#1C1C1C' }}>
       <NavBar onLogoClick={handleLogoClick} />
 
-      <div className="max-w-6xl mx-auto mt-6 pb-16">
+      <div className="max-w-6xl mx-auto mt-6 pb-16 px-4">
         {error && (
-          <div className="mx-4 mb-4 p-4 border rounded-lg" style={{ backgroundColor: '#3B3B3B', borderColor: '#EFDB00', color: '#FFFFFF' }}>
+          <div className="mb-4 p-4 border rounded-lg" style={{ backgroundColor: '#3B3B3B', borderColor: '#EFDB00', color: '#FFFFFF' }}>
             <p className="font-semibold">Error</p>
             <p className="text-sm">{error}</p>
             <button
@@ -255,7 +255,6 @@ function App() {
             </button>
           </div>
         )}
-
         <SearchBar
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}

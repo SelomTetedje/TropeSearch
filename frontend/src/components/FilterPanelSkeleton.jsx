@@ -1,7 +1,6 @@
 import { X } from "lucide-react";
 
 export default function FilterPanelSkeleton() {
-  // Skeleton shimmer animation
   const shimmer = {
     animation: 'shimmer 2s infinite',
     backgroundImage: 'linear-gradient(90deg, #3B3B3B 0%, #4C4C4C 50%, #3B3B3B 100%)',

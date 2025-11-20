@@ -47,19 +47,19 @@ export default function FilmModal({ film, onClose }) {
       onClick={onClose}
     >
       <div
-        className="rounded-lg max-w-3xl w-full shadow-lg overflow-scroll"
+        className="rounded-lg max-w-3xl w-full shadow-lg max-h-[90vh] flex flex-col overflow-hidden"
         style={{ backgroundColor: '#3B3B3B' }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-start p-4">
-          <div>
-            <h3 className="text-3xl font-semibold" style={{ color: '#FFFFFF' }}>{film.name}</h3>
+        <div className="flex justify-between items-start p-4 flex-shrink-0">
+          <div className="flex-1 min-w-0 pr-2">
+            <h3 className="text-3xl font-semibold truncate" style={{ color: '#FFFFFF' }}>{film.name}</h3>
             <p className="text-sm" style={{ color: '#999999' }}>{film.year}{film.director ? ` • Directed by ${film.director}` : ''}</p>
           </div>
           <button
             onClick={onClose}
             aria-label="Close"
-            className="hover:opacity-70"
+            className="hover:opacity-70 flex-shrink-0"
             style={{ color: '#999999' }}
             autoFocus
           >
@@ -67,12 +67,12 @@ export default function FilmModal({ film, onClose }) {
           </button>
         </div>
 
-        <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4 overflow-y-auto flex-1 min-h-0">
           {hasPoster && film.poster_url && (
             <img
               src={film.poster_url}
               alt={`${film.name} poster`}
-              className="w-full h-auto rounded"
+              className="w-full rounded max-h-[200px] md:max-h-none object-contain md:object-cover"
               onError={() => setHasPoster(false)}
               onLoad={() => setHasPoster(true)}
             />

@@ -1,6 +1,7 @@
 import { X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, startTransition } from "react";
 import FilterBox from "./FilterBox";
+import FilterPanelSkeleton from "./FilterPanelSkeleton";
 import { fetchGenres, fetchLanguages, fetchTropes } from "../services/filters";
 
 export default function FilterPanel({ filters, onFilterChange, onClearFilters, isVisible }) {
@@ -8,6 +9,8 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
   const [languages, setLanguages] = useState([]);
   const [tropes, setTropes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [showContent, setShowContent] = useState(false);
   const [enableTropes, setEnableTropes] = useState(true);
   const [enableLanguages, setEnableLanguages] = useState(true);
   const [enableGenres, setEnableGenres] = useState(true);
@@ -63,8 +66,12 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
     return () => clearTimeout(timer);
   }, [localMaxRuntime]);
 
+  // Load data only once on first visibility
   useEffect(() => {
+    if (!isVisible || hasLoaded) return;
+
     async function loadFilterData() {
+      setLoading(true);
       try {
         const [genresData, languagesData, tropesData] = await Promise.all([
           fetchGenres(),
@@ -74,14 +81,28 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
         setGenres(genresData);
         setLanguages(languagesData);
         setTropes(tropesData);
+        setHasLoaded(true);
+        setLoading(false);
       } catch (error) {
         console.error("Error loading filter data:", error);
-      } finally {
         setLoading(false);
       }
     }
     loadFilterData();
-  }, []);
+  }, [isVisible, hasLoaded]);
+
+  // Handle showing/hiding content with transition
+  useEffect(() => {
+    if (!isVisible) {
+      // Hide content immediately when panel closes
+      setShowContent(false);
+    } else if (hasLoaded && !loading) {
+      // When panel opens and data is ready, use transition to defer heavy render
+      startTransition(() => {
+        setShowContent(true);
+      });
+    }
+  }, [isVisible, hasLoaded, loading]);
 
   if (!isVisible) return null;
 
@@ -111,6 +132,10 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
     setEnableRuntime(false);
     setEnableRating(false);
   };
+
+  if (!showContent) {
+    return <FilterPanelSkeleton />;
+  }
 
   return (
     <div className="rounded-lg pt-8 px-8s flex flex-col gap-4" style={{ color: '#FFFFFF' }}>
@@ -163,22 +188,20 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
           )}
         </div>
 
-        {!loading && (
-          <FilterBox
-            title=""
-            items={tropes}
-            selectedItems={filters.tropes || []}
-            onItemToggle={(trope) => {
-              const current = filters.tropes || [];
-              const newList = current.some(t => t.id === trope.id)
-                ? current.filter(t => t.id !== trope.id)
-                : [...current, trope];
-              onFilterChange("tropes", newList);
-            }}
-            placeholder="Search..."
-            disabled={!enableTropes}
-          />
-        )}
+        <FilterBox
+          title=""
+          items={tropes}
+          selectedItems={filters.tropes || []}
+          onItemToggle={(trope) => {
+            const current = filters.tropes || [];
+            const newList = current.some(t => t.id === trope.id)
+              ? current.filter(t => t.id !== trope.id)
+              : [...current, trope];
+            onFilterChange("tropes", newList);
+          }}
+          placeholder="Search..."
+          disabled={!enableTropes}
+        />
       </div>
 
       {/* Languages + Genres */}
@@ -220,22 +243,20 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
             )}
           </div>
 
-          {!loading && (
-            <FilterBox
-              title=""
-              items={languages}
-              selectedItems={filters.languages || []}
-              onItemToggle={(language) => {
-                const current = filters.languages || [];
-                const newList = current.some(l => l.id === language.id)
-                  ? current.filter(l => l.id !== language.id)
-                  : [...current, language];
-                onFilterChange("languages", newList);
-              }}
-              placeholder="Search..."
-              disabled={!enableLanguages}
-            />
-          )}
+          <FilterBox
+            title=""
+            items={languages}
+            selectedItems={filters.languages || []}
+            onItemToggle={(language) => {
+              const current = filters.languages || [];
+              const newList = current.some(l => l.id === language.id)
+                ? current.filter(l => l.id !== language.id)
+                : [...current, language];
+              onFilterChange("languages", newList);
+            }}
+            placeholder="Search..."
+            disabled={!enableLanguages}
+          />
         </div>
 
         {/* Genres */}
@@ -274,22 +295,20 @@ export default function FilterPanel({ filters, onFilterChange, onClearFilters, i
             )}
           </div>
 
-          {!loading && (
-            <FilterBox
-              title=""
-              items={genres}
-              selectedItems={filters.genres || []}
-              onItemToggle={(genre) => {
-                const current = filters.genres || [];
-                const newList = current.some(g => g.id === genre.id)
-                  ? current.filter(g => g.id !== genre.id)
-                  : [...current, genre];
-                onFilterChange("genres", newList);
-              }}
-              placeholder="Search..."
-              disabled={!enableGenres}
-            />
-          )}
+          <FilterBox
+            title=""
+            items={genres}
+            selectedItems={filters.genres || []}
+            onItemToggle={(genre) => {
+              const current = filters.genres || [];
+              const newList = current.some(g => g.id === genre.id)
+                ? current.filter(g => g.id !== genre.id)
+                : [...current, genre];
+              onFilterChange("genres", newList);
+            }}
+            placeholder="Search..."
+            disabled={!enableGenres}
+          />
         </div>
       </div>
 

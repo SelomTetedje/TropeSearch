@@ -7,6 +7,7 @@ export default function SearchBar({
   activeFilterCount,
   viewMode,
   setViewMode,
+  showFiltersPanel
 }) {
   return (
     <div className="rounded-lg shadow-sm mb-4">
@@ -37,7 +38,7 @@ export default function SearchBar({
             style={{ backgroundColor: '#EFDB00', color: '#1C1C1C' }}
           >
             <Funnel className="w-5 h-5" />
-            Filters
+            {!showFiltersPanel ? "Show " : "Hide "}Filters
             {activeFilterCount > 0 && (
               <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ backgroundColor: '#4C4C4C', color: '#EFDB00' }}>
                 {activeFilterCount}

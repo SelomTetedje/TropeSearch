@@ -263,6 +263,7 @@ function App() {
           activeFilterCount={activeFilterCount}
           viewMode={viewMode}
           setViewMode={setViewMode}
+          showFiltersPanel={showFilters}
         />
 
         <FilterPanel

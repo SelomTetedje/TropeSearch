@@ -129,7 +129,7 @@ export default function HomeScreen({ films, onPickGenre, onPickTrope, onBrowseAl
               ))}
             </div>
             {selectedFilm && (
-              <FilmModal film={selectedFilm} onClose={closeModal} />
+              <FilmModal film={selectedFilm} onClose={closeModal} onTropeSelect={onPickTrope} />
             )}
           </section>
         )}

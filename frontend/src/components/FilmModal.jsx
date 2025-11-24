@@ -2,11 +2,18 @@ import { useEffect, useState, useRef } from "react";
 import { X } from "lucide-react";
 import { fetchFilmDetails } from "../services/filmService";
 
-export default function FilmModal({ film, onClose }) {
+export default function FilmModal({ film, onClose, onTropeSelect }) {
   const [hasPoster, setHasPoster] = useState(Boolean(film?.poster_url && film.poster_url !== 'N/A'));
   const [fullDetails, setFullDetails] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const tropesRef = useRef(null);
+
+  const handleTropeClick = (trope) => {
+    if (onTropeSelect) {
+      onTropeSelect(trope);
+    }
+    onClose();
+  };
 
   // Fetch full film details when modal opens
   useEffect(() => {
@@ -134,13 +141,15 @@ export default function FilmModal({ film, onClose }) {
                           className="flex gap-2 whitespace-nowrap overflow-x-auto hide-scrollbar py-1"
                         >
                           {film.tropes.map((trope) => (
-                            <span
+                            <button
                               key={trope.id}
+                              type="button"
+                              onClick={() => handleTropeClick(trope)}
                               className="px-2 py-1 text-xs rounded-full flex-shrink-0 transition-opacity hover:opacity-80"
                               style={{ backgroundColor: '#4C4C4C', color: '#FFFFFF' }}
                             >
                               {trope.name}
-                            </span>
+                            </button>
                           ))}
                         </div>
 

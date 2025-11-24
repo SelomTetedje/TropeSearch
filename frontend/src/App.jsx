@@ -288,6 +288,7 @@ function App() {
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={handlePageChange}
+            onTropeSelect={handlePickTrope}
           />
         )}
       </div>

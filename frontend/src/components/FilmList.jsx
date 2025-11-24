@@ -11,7 +11,8 @@ export default function FilmList({
   viewMode,
   currentPage,
   totalPages,
-  onPageChange
+  onPageChange,
+  onTropeSelect
 }) {
   const [selectedFilm, setSelectedFilm] = useState(null);
 
@@ -131,10 +132,10 @@ export default function FilmList({
 
           {renderPagination()}
         </>
-      )}
+    )}
     </div>
     {selectedFilm && (
-      <FilmModal film={selectedFilm} onClose={closeModal} />
+      <FilmModal film={selectedFilm} onClose={closeModal} onTropeSelect={onTropeSelect} />
     )}
     </>
   );

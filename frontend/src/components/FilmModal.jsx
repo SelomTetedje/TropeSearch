@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef } from "react";
 import { X } from "lucide-react";
 import { fetchFilmDetails } from "../services/filmService";
+import WatchlistButton from './WatchlistButton';
 
-export default function FilmModal({ film, onClose, onTropeSelect }) {
+export default function FilmModal({ film, onClose, onTropeSelect, isInWatchlist, onToggleWatchlist }) {
   const [hasPoster, setHasPoster] = useState(Boolean(film?.poster_url && film.poster_url !== 'N/A'));
   const [fullDetails, setFullDetails] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
@@ -63,15 +64,23 @@ export default function FilmModal({ film, onClose, onTropeSelect }) {
             <h3 className="text-3xl font-semibold truncate" style={{ color: '#FFFFFF' }}>{film.name}</h3>
             <p className="text-sm" style={{ color: '#999999' }}>{film.year}{film.director ? ` • Directed by ${film.director}` : ''}</p>
           </div>
-          <button
-            onClick={onClose}
-            aria-label="Close"
-            className="hover:opacity-70 flex-shrink-0"
-            style={{ color: '#999999' }}
-            autoFocus
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <WatchlistButton
+              filmId={film.id}
+              isInWatchlist={isInWatchlist}
+              onToggle={onToggleWatchlist}
+              size={20}
+            />
+            <button
+              onClick={onClose}
+              aria-label="Close"
+              className="hover:opacity-70"
+              style={{ color: '#999999' }}
+              autoFocus
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4 overflow-y-auto flex-1 min-h-0">

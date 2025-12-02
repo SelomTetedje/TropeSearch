@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import "react-lazy-load-image-component/src/effects/blur.css";
+import WatchlistButton from './WatchlistButton';
 
-export default function FilmCardLarge({ film, onSelect }) {
+export default function FilmCardLarge({ film, onSelect, isInWatchlist, onToggleWatchlist }) {
   const poster =
     film.poster_url || film.poster || "https://via.placeholder.com/80x120?text=No+Image";
   const rating = film.imdb_rating ?? film.rating;
@@ -61,15 +62,23 @@ export default function FilmCardLarge({ film, onSelect }) {
         />
 
         <div className="flex-1 min-w-0">
-          {/* Title + Rating */}
-          <div className="flex items-start gap-3 flex-wrap">
-            <h3 className="text-xl font-semibold">{film.name}</h3>
-            {rating && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-sm font-semibold" style={{ backgroundColor: '#4C4C4C', color: '#EFDB00' }}>
-                <span role="img" aria-label="star">⭐</span>
-                {Number(rating).toFixed(1)}
-              </span>
-            )}
+          {/* Title + Rating + Watchlist */}
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3 flex-wrap flex-1">
+              <h3 className="text-xl font-semibold">{film.name}</h3>
+              {rating && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-sm font-semibold" style={{ backgroundColor: '#4C4C4C', color: '#EFDB00' }}>
+                  <span role="img" aria-label="star">⭐</span>
+                  {Number(rating).toFixed(1)}
+                </span>
+              )}
+            </div>
+            <WatchlistButton
+              filmId={film.id}
+              isInWatchlist={isInWatchlist}
+              onToggle={onToggleWatchlist}
+              size={20}
+            />
           </div>
 
           {/* Year and Runtime */}

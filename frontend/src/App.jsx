@@ -5,6 +5,7 @@ import FilterPanel from "./components/FilterPanel";
 import FilmList from "./components/FilmList";
 import NavBar from "./components/Navbar";
 import HomeScreen from "./components/HomeScreen";
+import WatchlistModal from "./components/WatchlistModal";
 import { getCacheItem, setCacheItem } from "./utils/cache";
 import {
   createSession,
@@ -18,6 +19,12 @@ import {
   subscribeToSessionFilters,
   subscribeToSessionParticipants
 } from "./services/sessionService";
+import {
+  getWatchlist,
+  addToWatchlist,
+  removeFromWatchlist,
+  isInWatchlist as checkIsInWatchlist
+} from "./utils/watchlist";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -62,6 +69,15 @@ function App() {
   const participantSubscription = useRef(null);
   const heartbeatInterval = useRef(null);
   const lastSyncedFilters = useRef(null);
+
+  // Watchlist state
+  const [watchlistIds, setWatchlistIds] = useState(() => getWatchlist());
+  const [showWatchlistModal, setShowWatchlistModal] = useState(false);
+
+  // Debug watchlist state changes
+  useEffect(() => {
+    console.log('Watchlist state updated:', watchlistIds);
+  }, [watchlistIds]);
 
   useEffect(() => { getFilms(); }, []);
 
@@ -238,6 +254,33 @@ function App() {
     clearFilters();
     setIsHome(false);
   }
+
+  // Watchlist handlers
+  function handleToggleWatchlist(filmId) {
+    console.log('Toggle watchlist for:', filmId);
+    console.log('Currently in watchlist:', checkIsInWatchlist(filmId));
+
+    if (checkIsInWatchlist(filmId)) {
+      console.log('Removing from watchlist');
+      removeFromWatchlist(filmId);
+    } else {
+      console.log('Adding to watchlist');
+      addToWatchlist(filmId);
+    }
+
+    // Update state to trigger re-render
+    const newWatchlist = getWatchlist();
+    console.log('Updated watchlist:', newWatchlist);
+    setWatchlistIds(newWatchlist);
+  }
+
+  function handleRemoveFromWatchlist(filmId) {
+    removeFromWatchlist(filmId);
+    setWatchlistIds(getWatchlist());
+  }
+
+  // Get watchlist films (films that are in the watchlist)
+  const watchlistFilms = films.filter(film => watchlistIds.includes(film.id));
 
   // Session handlers
   async function handleCreateSession() {
@@ -424,6 +467,8 @@ function App() {
         onLeaveSession={handleLeaveSession}
         onEndSession={handleEndSession}
         onRefreshFilters={handleRefreshFilters}
+        onOpenWatchlist={() => setShowWatchlistModal(true)}
+        watchlistCount={watchlistIds.length}
       />
 
       <div className="max-w-6xl mx-auto mt-6 pb-16 px-4">
@@ -474,9 +519,23 @@ function App() {
             totalPages={totalPages}
             onPageChange={handlePageChange}
             onTropeSelect={handlePickTrope}
+            watchlistIds={watchlistIds}
+            onToggleWatchlist={handleToggleWatchlist}
           />
         )}
       </div>
+
+      {/* Watchlist Modal */}
+      <WatchlistModal
+        isOpen={showWatchlistModal}
+        onClose={() => setShowWatchlistModal(false)}
+        watchlistFilms={watchlistFilms}
+        onRemove={handleRemoveFromWatchlist}
+        onSelectFilm={(film) => {
+          // You can add film selection logic here if needed
+          console.log('Selected film:', film);
+        }}
+      />
     </div>
   );
 }

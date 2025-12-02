@@ -1,5 +1,5 @@
 // src/components/Navbar.jsx
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Bookmark } from 'lucide-react';
 import CacheManager from "./CacheManager";
 import GroupSessionButton from "./GroupSessionButton";
 
@@ -14,7 +14,9 @@ export default function NavBar({
   onJoinSession,
   onLeaveSession,
   onEndSession,
-  onRefreshFilters
+  onRefreshFilters,
+  onOpenWatchlist,
+  watchlistCount
 }) {
     return (
       <nav className="sticky top-0 z-20" style={{ backgroundColor: '#070707' }}>
@@ -56,6 +58,23 @@ export default function NavBar({
                 </button>
               </>
             )}
+            <button
+              onClick={onOpenWatchlist}
+              className="relative flex items-center gap-2 px-3 py-2 rounded-lg transition-all hover:opacity-80 active:opacity-60"
+              style={{
+                backgroundColor: '#3B3B3B',
+                color: '#EFDB00'
+              }}
+              aria-label="Open Watchlist"
+              title="My Watchlist"
+            >
+              <Bookmark size={18} />
+              {watchlistCount > 0 && (
+                <span className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full text-xs font-bold" style={{ backgroundColor: '#EFDB00', color: '#1C1C1C' }}>
+                  {watchlistCount}
+                </span>
+              )}
+            </button>
             <GroupSessionButton
               activeSession={activeSession}
               participants={participants}

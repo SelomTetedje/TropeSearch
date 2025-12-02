@@ -4,15 +4,17 @@ import FilmCard from "./FilmCardSmall";
 import FilmCardLarge from "./FilmCardLarge";
 import FilmModal from "./FilmModal";
 
-export default function FilmList({ 
-  films, 
+export default function FilmList({
+  films,
   totalFilms,
-  onClearFilters, 
+  onClearFilters,
   viewMode,
   currentPage,
   totalPages,
   onPageChange,
-  onTropeSelect
+  onTropeSelect,
+  watchlistIds,
+  onToggleWatchlist
 }) {
   const [selectedFilm, setSelectedFilm] = useState(null);
 
@@ -123,9 +125,22 @@ export default function FilmList({
           >
             {films.map((film, i) =>
               viewMode === "large" ? (
-                <FilmCardLarge key={film.id || i} film={film} onSelect={openFilm} />
+                <FilmCardLarge
+                  key={film.id || i}
+                  film={film}
+                  onSelect={openFilm}
+                  isInWatchlist={watchlistIds.includes(film.id)}
+                  onToggleWatchlist={onToggleWatchlist}
+                />
               ) : (
-                <FilmCard key={film.id || i} film={film} index={i} onSelect={openFilm} />
+                <FilmCard
+                  key={film.id || i}
+                  film={film}
+                  index={i}
+                  onSelect={openFilm}
+                  isInWatchlist={watchlistIds.includes(film.id)}
+                  onToggleWatchlist={onToggleWatchlist}
+                />
               )
             )}
           </div>
@@ -135,7 +150,13 @@ export default function FilmList({
     )}
     </div>
     {selectedFilm && (
-      <FilmModal film={selectedFilm} onClose={closeModal} onTropeSelect={onTropeSelect} />
+      <FilmModal
+        film={selectedFilm}
+        onClose={closeModal}
+        onTropeSelect={onTropeSelect}
+        isInWatchlist={watchlistIds.includes(selectedFilm.id)}
+        onToggleWatchlist={onToggleWatchlist}
+      />
     )}
     </>
   );

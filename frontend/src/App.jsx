@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "./lib/supabase";
 import SearchBar from "./components/SearchBar";
 import FilterPanel from "./components/FilterPanel";
@@ -6,6 +6,18 @@ import FilmList from "./components/FilmList";
 import NavBar from "./components/Navbar";
 import HomeScreen from "./components/HomeScreen";
 import { getCacheItem, setCacheItem } from "./utils/cache";
+import {
+  createSession,
+  joinSession,
+  leaveSession,
+  endSession,
+  updateSessionFilters,
+  updateParticipantLastSeen,
+  getSessionParticipants,
+  getSession,
+  subscribeToSessionFilters,
+  subscribeToSessionParticipants
+} from "./services/sessionService";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -41,6 +53,15 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [isHome, setIsHome] = useState(true);
   const [error, setError] = useState(null);
+
+  // Group session state
+  const [activeSession, setActiveSession] = useState(null);
+  const [sessionParticipants, setSessionParticipants] = useState([]);
+  const [autoSync, setAutoSync] = useState(true); // Auto-sync enabled by default
+  const filterSubscription = useRef(null);
+  const participantSubscription = useRef(null);
+  const heartbeatInterval = useRef(null);
+  const lastSyncedFilters = useRef(null);
 
   useEffect(() => { getFilms(); }, []);
 
@@ -218,6 +239,158 @@ function App() {
     setIsHome(false);
   }
 
+  // Session handlers
+  async function handleCreateSession() {
+    try {
+      const { session, participantId } = await createSession(filters);
+      setActiveSession({ session, participantId });
+
+      // Load initial participants
+      const participants = await getSessionParticipants(session.session_code);
+      setSessionParticipants(participants);
+
+      // Subscribe to updates
+      setupSessionSubscriptions(session.session_code);
+      setupHeartbeat(participantId);
+    } catch (error) {
+      console.error('Failed to create session:', error);
+      throw error;
+    }
+  }
+
+  async function handleJoinSession(sessionCode, displayName) {
+    try {
+      const { session, participantId } = await joinSession(sessionCode, displayName);
+      setActiveSession({ session, participantId });
+
+      // Update local filters to match session
+      setFilters(session.current_filters);
+
+      // Load participants
+      const participants = await getSessionParticipants(session.session_code);
+      setSessionParticipants(participants);
+
+      // Subscribe to updates
+      setupSessionSubscriptions(session.session_code);
+      setupHeartbeat(participantId);
+    } catch (error) {
+      console.error('Failed to join session:', error);
+      throw error;
+    }
+  }
+
+  async function handleLeaveSession() {
+    if (!activeSession) return;
+
+    try {
+      await leaveSession(activeSession.participantId);
+      cleanupSession();
+    } catch (error) {
+      console.error('Failed to leave session:', error);
+    }
+  }
+
+  async function handleEndSession() {
+    if (!activeSession) return;
+
+    try {
+      await endSession(activeSession.session.session_code);
+      cleanupSession();
+    } catch (error) {
+      console.error('Failed to end session:', error);
+    }
+  }
+
+  function setupSessionSubscriptions(sessionCode) {
+    // Subscribe to filter changes
+    filterSubscription.current = subscribeToSessionFilters(sessionCode, (newFilters) => {
+      const newFiltersStr = JSON.stringify(newFilters);
+      const lastFiltersStr = JSON.stringify(lastSyncedFilters.current);
+
+      // Only update if filters actually changed AND auto-sync is enabled
+      if (newFiltersStr !== lastFiltersStr) {
+        if (autoSync) {
+          console.log('✅ Auto-applying remote filter update');
+          lastSyncedFilters.current = newFilters;
+          setFilters(newFilters);
+        } else {
+          console.log('📥 Filter update available (manual sync mode)');
+          lastSyncedFilters.current = newFilters; // Track for manual refresh
+        }
+      } else {
+        console.log('⏭️ Skipping duplicate filter update');
+      }
+    });
+
+    // Subscribe to participant changes
+    participantSubscription.current = subscribeToSessionParticipants(sessionCode, (participants) => {
+      setSessionParticipants(participants);
+    });
+  }
+
+  function setupHeartbeat(participantId) {
+    // Send heartbeat every 15 seconds
+    heartbeatInterval.current = setInterval(() => {
+      updateParticipantLastSeen(participantId);
+    }, 15000);
+  }
+
+  function cleanupSession() {
+    // Unsubscribe from real-time updates
+    if (filterSubscription.current) {
+      supabase.removeChannel(filterSubscription.current);
+      filterSubscription.current = null;
+    }
+    if (participantSubscription.current) {
+      supabase.removeChannel(participantSubscription.current);
+      participantSubscription.current = null;
+    }
+
+    // Clear heartbeat
+    if (heartbeatInterval.current) {
+      clearInterval(heartbeatInterval.current);
+      heartbeatInterval.current = null;
+    }
+
+    // Clear session state
+    setActiveSession(null);
+    setSessionParticipants([]);
+  }
+
+  // Manual refresh function
+  async function handleRefreshFilters() {
+    if (!activeSession?.session?.session_code) return;
+
+    try {
+      const session = await getSession(activeSession.session.session_code);
+      setFilters(session.current_filters);
+
+      // Also refresh participants
+      const participants = await getSessionParticipants(activeSession.session.session_code);
+      setSessionParticipants(participants);
+    } catch (error) {
+      console.error('Failed to refresh filters:', error);
+    }
+  }
+
+  // Update session filters when local filters change (if in a session)
+  useEffect(() => {
+    if (activeSession?.session?.session_code) {
+      const timeoutId = setTimeout(() => {
+        updateSessionFilters(activeSession.session.session_code, filters);
+      }, 500); // Debounce filter updates
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [filters, activeSession]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cleanupSession();
+    };
+  }, []);
+
   // Pagination
   const totalPages = Math.ceil(filteredFilms.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -239,7 +412,19 @@ function App() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#1C1C1C' }}>
-      <NavBar onLogoClick={handleLogoClick} />
+      <NavBar
+        onLogoClick={handleLogoClick}
+        activeSession={activeSession}
+        participants={sessionParticipants}
+        currentFilters={filters}
+        autoSync={autoSync}
+        onToggleAutoSync={() => setAutoSync(!autoSync)}
+        onCreateSession={handleCreateSession}
+        onJoinSession={handleJoinSession}
+        onLeaveSession={handleLeaveSession}
+        onEndSession={handleEndSession}
+        onRefreshFilters={handleRefreshFilters}
+      />
 
       <div className="max-w-6xl mx-auto mt-6 pb-16 px-4">
         {error && (

@@ -23,7 +23,3 @@ url = "https://www.aclweb.org/anthology/2020.nlpcss-1.23",
 doi = "10.18653/v1/2020.nlpcss-1.23",
 pages = "212--217",
 abstract = "Popular media reflects and reinforces societal biases through the use of tropes, which are narrative elements, such as archetypal characters and plot arcs, that occur frequently across media. In this paper, we specifically investigate gender bias within a large collection of tropes. To enable our study, we crawl tvtropes.org, an online user-created repository that contains 30K tropes associated with 1.9M examples of their occurrences across film, television, and literature. We automatically score the {``}genderedness{''} of each trope in our TVTROPES dataset, which enables an analysis of (1) highly-gendered topics within tropes, (2) the relationship between gender bias and popular reception, and (3) how the gender of a work{'}s creator correlates with the types of tropes that they use.",
-}
-
-TMP: supabase pass: gc5z14CkGOzjFPV9
-Omdb API key: 9328bc17
